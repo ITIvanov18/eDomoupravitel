@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Companies</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div th:replace="~{header :: header}"></div>
+
+    <div class="container mt-4">
+        <h2>Companies</h2>
+        <a href="/companies/create" class="btn btn-primary mb-3">Create New Company</a>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="company : ${companies}">
+                    <td th:text="${company.id}">1</td>
+                    <td th:text="${company.name}">Company Name</td>
+                    <td>
+                        <form th:action="@{/companies/delete/{id}(id=${company.id})}"
+                              th:method="delete" style="display: inline;">
+                            <button type="submit"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Are you sure?')">Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
