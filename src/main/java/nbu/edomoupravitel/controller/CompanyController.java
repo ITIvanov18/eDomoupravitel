@@ -37,10 +37,25 @@ public class CompanyController {
         return "redirect:/companies";
     }
 
-    @DeleteMapping("/delete/{id}")
+    @GetMapping("/edit/{id}")
+    public String editCompanyForm(@PathVariable Long id, Model model) {
+        model.addAttribute("company", companyService.getCompany(id));
+        return "companies/form";
+    }
+
+    @PutMapping("/edit/{id}")
+    public String updateCompany(@PathVariable Long id, @Valid @ModelAttribute("company") CompanyDto companyDto,
+                                BindingResult result) {
+        if (result.hasErrors()) {
+            return "companies/form";
+        }
+        companyService.updateCompany(id, companyDto);
+        return "redirect:/companies";
+    }
+
+    @DeleteMapping("/{id}")
     public String deleteCompany(@PathVariable Long id) {
         companyService.deleteCompany(id);
         return "redirect:/companies";
     }
 }
-
