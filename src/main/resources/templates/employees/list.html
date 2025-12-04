@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Employees</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+<div th:replace="~{header :: header}"></div>
+
+<div class="container mt-4">
+    <h2>Employees</h2>
+    <a href="/employees/create" class="btn btn-primary mb-3">Create New Employee</a>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Company</th>
+            <!-- <th>Buildings Managed</th> We don't have this in DTO explicitly without fetching count logic or list size -->
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="employee : ${employees}">
+            <td th:text="${employee.id}">1</td>
+            <td th:text="${employee.firstName} + ' ' + ${employee.lastName}">Name</td>
+            <td th:text="${employee.companyName}">Company Name</td>
+            <td>
+                <a th:href="@{/employees/delete/{id}(id=${employee.id})}" class="btn btn-danger btn-sm"
+                   onclick="return confirm('Are you sure? We will attempt redistribution.')">Delete</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
