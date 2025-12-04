@@ -85,7 +85,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 // оптимизация: преоценка на минималната стойност, за да има стриктен баланс при местене на мн сгради
                 Employee targetEmployee = otherEmployees.stream()
                         .min(Comparator.comparingInt(e -> e.getBuildings().size()))
-                        .orElse(otherEmployees.get(0));
+                        .orElse(otherEmployees.getFirst());
 
                 // прехвърляне на сградата
                 building.setEmployee(targetEmployee);

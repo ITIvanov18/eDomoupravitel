@@ -14,10 +14,11 @@
     <h2 th:text="${company.id} ? 'Edit Company' : 'Create Company'">Create Company</h2>
 
     <!-- Dynamic Action URL -->
-    <form th:action="${company.id} ? @{/companies/edit/{id}(id=${company.id})} : @{/companies/create}"
-          th:object="${company}" method="post">
+    <form th:action="@{${company.id != null ? '/companies/edit/' + company.id : '/companies/create'}}"
+          th:object="${company}"
+          method="post">
 
-        <input type="hidden" name="_method" value="put" th:if="${company.id}" />
+        <input type="hidden" name="_method" value="put" th:if="${company.id != null}" />
 
         <div class="mb-3">
             <label for="name" class="form-label">Company Name</label>
