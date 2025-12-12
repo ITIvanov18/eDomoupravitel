@@ -9,5 +9,6 @@ import java.util.List;
 
 @Repository
 public interface BuildingRepository extends JpaRepository<Building, Long> {
+    // SELECT * FROM building WHERE employee_id = ?
     List<Building> findByEmployee(Employee employee);
 }

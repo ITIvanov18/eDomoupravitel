@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Create Apartment</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div th:replace="~{header :: header}"></div>
+
+    <div class="container mt-4">
+        <h2>Create Apartment</h2>
+
+        <form th:action="@{/apartments/create}" th:object="${apartment}" method="post">
+            <div class="mb-3">
+                <label for="apartmentNumber" class="form-label">Apartment Number</label>
+                <input type="number" class="form-control" id="apartmentNumber" th:field="*{apartmentNumber}" required>
+                <div th:if="${#fields.hasErrors('apartmentNumber')}" th:errors="*{apartmentNumber}" class="text-danger">
+                    Error</div>
+            </div>
+            <div class="mb-3">
+                <label for="floor" class="form-label">Floor</label>
+                <input type="number" class="form-control" id="floor" th:field="*{floor}" required>
+            </div>
+            <div class="mb-3">
+                <label for="area" class="form-label">Area</label>
+                <input type="number" step="0.01" class="form-control" id="area" th:field="*{area}" min="0">
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="hasPet" th:field="*{hasPet}">
+                <label class="form-check-label" for="hasPet">Has Pet?</label>
+            </div>
+
+            <div class="mb-3">
+                <label for="buildingId" class="form-label">Building</label>
+                <select class="form-control" id="buildingId" th:field="*{buildingId}" required>
+                    <option value="">Select Building</option>
+                    <option th:each="building : ${buildings}" th:value="${building.id}" th:text="${building.address}">
+                    </option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-success">Save</button>
+            <a href="/apartments" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

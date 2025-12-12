@@ -9,5 +9,6 @@ import java.util.List;
 
 @Repository
 public interface ResidentRepository extends JpaRepository<Resident, Long> {
+    // SELECT * FROM resident WHERE apartment_id = ?
     List<Resident> findByApartment(Apartment apartment);
 }
