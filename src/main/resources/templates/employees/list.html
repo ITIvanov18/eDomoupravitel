@@ -30,8 +30,16 @@
             <td th:text="${employee.firstName} + ' ' + ${employee.lastName}">Name</td>
             <td th:text="${employee.companyName}">Company Name</td>
             <td>
-                <a th:href="@{/employees/delete/{id}(id=${employee.id})}" class="btn btn-danger btn-sm"
-                   onclick="return confirm('Are you sure? We will attempt redistribution.')">Delete</a>
+                <form th:action="@{/employees/delete/{id}(id=${employee.id})}"
+                      th:method="delete"
+                      style="display:inline;">
+
+                    <button type="submit"
+                            class="btn btn-danger btn-sm"
+                            onclick="return confirm('Are you sure? We will attempt redistribution.')">
+                        Delete
+                    </button>
+                </form>
             </td>
         </tr>
         </tbody>
