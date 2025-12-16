@@ -2,6 +2,7 @@ package nbu.edomoupravitel.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import nbu.edomoupravitel.dto.BuildingDto;
+import nbu.edomoupravitel.entity.Apartment;
 import nbu.edomoupravitel.entity.Building;
 import nbu.edomoupravitel.entity.Company;
 import nbu.edomoupravitel.entity.Employee;
@@ -10,6 +11,7 @@ import nbu.edomoupravitel.exception.ResourceNotFoundException;
 import nbu.edomoupravitel.repository.BuildingRepository;
 import nbu.edomoupravitel.repository.CompanyRepository;
 import nbu.edomoupravitel.repository.EmployeeRepository;
+import nbu.edomoupravitel.service.ApartmentService;
 import nbu.edomoupravitel.service.BuildingService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,7 @@ public class BuildingServiceImpl implements BuildingService {
     private final BuildingRepository buildingRepository;
     private final CompanyRepository companyRepository;
     private final EmployeeRepository employeeRepository;
+    private final ApartmentService apartmentService;
 
     @Override
     @Transactional
@@ -74,14 +77,6 @@ public class BuildingServiceImpl implements BuildingService {
     }
 
     @Override
-    public void deleteBuilding(Long id) {
-        if (!buildingRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Building not found with id: " + id);
-        }
-        buildingRepository.deleteById(id);
-    }
-
-    @Override
     public BuildingDto getBuilding(Long id) {
         Building building = buildingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Building not found with id: " + id));
@@ -93,5 +88,21 @@ public class BuildingServiceImpl implements BuildingService {
         return buildingRepository.findAll().stream()
                 .map(BuildingDto::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional // гарантира, че всичко се случва наведнъж
+    public void deleteBuilding(Long id) {
+        Building building = buildingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Building not found with id: " + id));
+
+        List<Apartment> apartments = building.getApartments();
+
+        // прави се копие на списъка, за да се избегне ConcurrentModification
+        for (Apartment apartment : List.copyOf(apartments)) {
+            apartmentService.deleteApartment(apartment.getId());
+        }
+
+        buildingRepository.delete(building);
     }
 }

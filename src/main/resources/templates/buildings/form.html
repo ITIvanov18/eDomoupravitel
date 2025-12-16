@@ -41,7 +41,7 @@
             </div>
 
             <div class="mb-3">
-                <label for="companyId" class="form-label">Company (Mandatory for Logic A)</label>
+                <label for="companyId" class="form-label">Company</label>
                 <select class="form-control" id="companyId" th:field="*{companyId}" required>
                     <option value="">Select Company</option>
                     <option th:each="company : ${companies}" th:value="${company.id}" th:text="${company.name}">

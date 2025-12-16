@@ -33,16 +33,14 @@
                     <td th:text="${building.floors}">5</td>
                     <td th:text="${building.numberOfApartments}">10</td>
                     <td th:text="${building.area}">100.0</td>
-                    <td th:text="${building.employeeId} != null ? 'ID: ' + ${building.employeeId} : 'Unassigned'">
+                    <td th:text="${building.employeeName} != null ? 'ID: ' + ${building.employeeName} : 'Unassigned'">
                         Employee</td>
                     <td>
                         <a th:href="@{/apartments(buildingId=${building.id})}" class="btn btn-info btn-sm">View Apts</a>
 
-                        <form th:action="@{/buildings/delete/{id}(id=${building.id})}"
-                              th:method="delete"
-                              style="display: inline;">
-                            <button type="submit"
-                                    class="btn btn-danger btn-sm"
+                        <form th:action="@{/buildings/{id}(id=${building.id})}"
+                              th:method="delete" style="display: inline;">
+                            <button type="submit" class="btn btn-danger btn-sm"
                                     onclick="return confirm('Are you sure you want to remove this building?')">
                                 Delete
                             </button>

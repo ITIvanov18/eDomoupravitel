@@ -45,7 +45,7 @@ public class BuildingController {
         return "redirect:/buildings";
     }
 
-    @GetMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public String deleteBuilding(@PathVariable Long id) {
         buildingService.deleteBuilding(id);
         return "redirect:/buildings";
