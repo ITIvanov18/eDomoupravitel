@@ -53,8 +53,11 @@
                                 class="btn btn-success btn-sm">Pay</a>
 
                             <!-- Delete Button -->
-                            <a th:href="@{/apartments/delete/{id}(id=${apt.id})}" class="btn btn-danger btn-sm"
-                                onclick="return confirm('Are you sure?')">Delete</a>
+                            <form th:action="@{/apartments/{id}(id=${apt.id})}" th:method="delete"
+                                  style="display:inline;"
+                                  onsubmit="return confirm('Are you sure?');">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
                         </div>
 
                         <!-- Modal Nested Inside Action Column -->
@@ -171,14 +174,6 @@
                                                             name="usesElevator" id="usesElevator">
                                                         <label class="form-check-label small"
                                                             for="usesElevator">Elevator?</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-2 d-flex align-items-end">
-                                                    <div class="form-check mb-1">
-                                                        <input class="form-check-input" type="checkbox" name="isOwner"
-                                                            id="isOwner">
-                                                        <label class="form-check-label small fw-bold text-primary"
-                                                            for="isOwner">Is Owner?</label>
                                                     </div>
                                                 </div>
                                             </div>

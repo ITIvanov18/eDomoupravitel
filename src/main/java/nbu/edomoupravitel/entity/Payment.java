@@ -25,9 +25,13 @@ public class Payment {
     @Column(nullable = false)
     private LocalDate paymentDate;
 
+    // тук се пази одит на стари плащания
+    @Column(name = "audit_details")
+    private String auditDetails;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "apartment_id", nullable = false)
+    @JoinColumn(name = "apartment_id", nullable = true)
     @ToString.Exclude
-    @EqualsAndHashCode.Exclude // Предотвратява безкрайна рекурсия (StackOverflow) при двупосочни връзки
+    @EqualsAndHashCode.Exclude // предотвратява безкрайна рекурсия (StackOverflow) при двупосочни връзки
     private Apartment apartment;
 }

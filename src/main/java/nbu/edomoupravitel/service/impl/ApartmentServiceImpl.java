@@ -2,13 +2,9 @@ package nbu.edomoupravitel.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import nbu.edomoupravitel.dto.ApartmentDto;
-import nbu.edomoupravitel.entity.Apartment;
-import nbu.edomoupravitel.entity.Building;
-import nbu.edomoupravitel.entity.Owner;
+import nbu.edomoupravitel.entity.*;
 import nbu.edomoupravitel.exception.ResourceNotFoundException;
-import nbu.edomoupravitel.repository.ApartmentRepository;
-import nbu.edomoupravitel.repository.BuildingRepository;
-import nbu.edomoupravitel.repository.OwnerRepository;
+import nbu.edomoupravitel.repository.*;
 import nbu.edomoupravitel.service.ApartmentService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +20,8 @@ public class ApartmentServiceImpl implements ApartmentService {
     private final ApartmentRepository apartmentRepository;
     private final BuildingRepository buildingRepository;
     private final OwnerRepository ownerRepository;
+    private final PaymentRepository paymentRepository;
+    private final ResidentRepository residentRepository;
 
     private static final double BASE_TAX = 1.00; // такса на кв.м
     private static final double ELEVATOR_TAX = 10.00; // такса за живущ над 7 г., ползващ асансьор
@@ -78,11 +76,38 @@ public class ApartmentServiceImpl implements ApartmentService {
     }
 
     @Override
+    @Transactional
     public void deleteApartment(Long id) {
-        if (!apartmentRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Apartment not found with id: " + id);
+        Apartment apartment = apartmentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Apartment not found with id: " + id));
+
+        List<Payment> payments = paymentRepository.findByApartment(apartment);
+
+        // unlink на плащанията с апартамента
+        // не се трият, за да не губим отчетност
+        String historySnapshot = String.format("ARCHIVED: %s, , Floor %d, Ap. %d",
+                apartment.getBuilding().getAddress(),
+                apartment.getFloor(),
+        apartment.getApartmentNumber());
+
+        for (Payment payment : payments) {
+            // ЗАПАЗВА ИСТОРИЯТА
+            payment.setAuditDetails(historySnapshot);
+            // КЪСА ВРЪЗКАТА
+            payment.setApartment(null);
+            paymentRepository.save(payment);
         }
-        apartmentRepository.deleteById(id);
+
+        // (cascade delete) - ако няма апартамент, няма и жители
+        // трием ги, за да не гръмне следващият constraint
+        List<Resident> residents = residentRepository.findByApartment(apartment);
+        residentRepository.deleteAll(residents);
+
+        // синхронизира базата преди да изтрие "родителя"
+        paymentRepository.flush();
+        residentRepository.flush();
+
+        apartmentRepository.delete(apartment);
     }
 
     @Override

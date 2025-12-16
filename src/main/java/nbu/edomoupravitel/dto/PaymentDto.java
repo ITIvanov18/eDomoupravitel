@@ -47,6 +47,7 @@ public class PaymentDto {
                 .apartmentId(entity.getApartment() != null ? entity.getApartment().getId() : null);
 
         // навигира през графа от обекти, за да извлече контекстна информация за UI
+        // ВАРИАНТ 1: апартаментът съществува (Live Data)
         if (entity.getApartment() != null && entity.getApartment().getBuilding() != null) {
             builder.buildingAddress(entity.getApartment().getBuilding().getAddress());
 
@@ -59,6 +60,17 @@ public class PaymentDto {
                 }
             }
         }
+        // ВАРИАНТ 2: апартаментът е изтрит (Historical Snapshot)
+        else if (entity.getAuditDetails() != null) {
+            builder.buildingAddress(entity.getAuditDetails()); // Тук ще излезе "ARCHIVED: Apt 5..."
+            builder.companyName("N/A (Deleted)");
+            builder.employeeName("N/A");
+        }
+        // ВАРИАНТ 3: няма данни (сираче)
+        else {
+            builder.buildingAddress("Unknown (Data Lost)");
+        }
+
         return builder.build();
     }
 }
