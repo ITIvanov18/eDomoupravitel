@@ -3,26 +3,102 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>House Manager - Dashboard</title>
+    <title>eDomoupravitel - Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
 </head>
 
 <body>
-    <div th:replace="~{header :: header}"></div>
+<div th:replace="~{header :: header}"></div>
 
-    <div class="container mt-5">
-        <div class="p-5 mb-4 bg-light rounded-3">
-            <div class="container-fluid py-5">
-                <h1 class="display-5 fw-bold">Welcome to House Manager</h1>
-                <p class="col-md-8 fs-4">Manage your condominium companies, buildings, employees, and apartments
-                    efficiently.</p>
-                <hr class="my-4">
-                <p>Use the navigation bar to access different sections.</p>
-            </div>
+<div class="container mt-4 mb-5">
+    <!-- Dashboard Welcome Section-->
+    <div class="dashboard-title-section">
+        <div class="dashboard-icon-large">
+            <i class="fas fa-building"></i>
+        </div>
+        <div>
+            <h2 class="fw-bold mb-0">Welcome to eDomoupravitel</h2>
+            <p class="text-muted mb-0">Manage your properties with ease</p>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Auto-fit grid -->
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-5 g-4">
+
+        <!-- Companies -->
+        <div class="col">
+            <div class="dashboard-card">
+                <div class="card-icon">
+                    <i class="far fa-building"></i>
+                </div>
+                <div class="stat-label">Companies</div>
+                <div class="stat-number" th:data-target="${companyCount}">0</div>
+                <a href="/companies" class="btn btn-outline-primary btn-sm btn-card-action">Manage</a>
+            </div>
+        </div>
+
+        <!-- Buildings -->
+        <div class="col">
+            <div class="dashboard-card">
+                <div class="card-icon">
+                    <i class="fas fa-city"></i>
+                </div>
+                <div class="stat-label">Buildings</div>
+                <div class="stat-number" th:data-target="${buildingCount}">0</div>
+                <a href="/buildings" class="btn btn-outline-primary btn-sm btn-card-action">Manage</a>
+            </div>
+        </div>
+
+        <!-- Employees -->
+        <div class="col">
+            <div class="dashboard-card">
+                <div class="card-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stat-label">Employees</div>
+                <div class="stat-number" th:data-target="${employeeCount}">0</div>
+                <a href="/employees" class="btn btn-outline-primary btn-sm btn-card-action">Manage</a>
+            </div>
+        </div>
+
+        <!-- Apartments -->
+        <div class="col">
+            <div class="dashboard-card">
+                <div class="card-icon">
+                    <i class="fas fa-door-open"></i>
+                </div>
+                <div class="stat-label">Apartments</div>
+                <div class="stat-number" th:data-target="${apartmentCount}">0</div>
+                <a href="/apartments" class="btn btn-outline-primary btn-sm btn-card-action">Manage</a>
+            </div>
+        </div>
+
+        <!-- Payments -->
+        <div class="col">
+            <div class="dashboard-card">
+                <div class="card-icon">
+                    <i class="far fa-credit-card"></i>
+                </div>
+                <div class="stat-label">Payments</div>
+                <div class="stat-number" th:data-target="${paymentCount}">0</div>
+                <a href="/payments" class="btn btn-outline-primary btn-sm btn-card-action">Manage</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sticky Footer Section -->
+<footer class="footer-section">
+    <div class="container text-center">
+        <p class="mb-0">System Status: <span class="badge bg-success">Operational</span> | Last Login: <span
+                th:text="${#dates.format(#execInfo.now, 'EEE MMM dd HH:mm:ss z yyyy')}"></span></p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/script.js"></script>
 </body>
 
 </html>
