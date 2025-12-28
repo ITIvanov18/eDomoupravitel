@@ -161,3 +161,17 @@ body {
     font-size: 0.85rem;
     color: var(--text-secondary);
 }
+
+
+/* Custom UI Components */
+.btn-custom-create {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.btn-custom-create:hover {
+    background-color: var(--hover-color) !important;
+    border-color: var(--hover-color) !important;
+    color: white !important;
+}

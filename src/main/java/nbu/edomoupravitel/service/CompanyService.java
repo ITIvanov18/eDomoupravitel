@@ -15,4 +15,14 @@ public interface CompanyService {
     CompanyDto getCompany(Long id);
 
     List<CompanyDto> getAllCompanies();
+
+    void assignEmployee(Long companyId, Long employeeId);
+
+    void removeEmployee(Long companyId, Long employeeId);
+
+    void createAndAssignEmployee(Long companyId, nbu.edomoupravitel.dto.EmployeeDto employeeDto);
+
+    List<nbu.edomoupravitel.dto.EmployeeDto> getCompanyEmployees(Long companyId);
+
+    List<nbu.edomoupravitel.dto.EmployeeDto> getAvailableEmployees();
 }

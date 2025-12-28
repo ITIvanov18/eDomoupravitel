@@ -16,7 +16,7 @@
     <h2>Apartments</h2>
 
     <div class="mb-3">
-        <a href="/apartments/create" class="btn btn-primary">Create New Apartment</a>
+        <a href="/apartments/create" class="btn btn-primary btn-custom-create">Create New Apartment</a>
         <span class="ms-3" th:if="${param.buildingId}">Filtered by Building ID: <span
                 th:text="${param.buildingId}"></span></span>
     </div>
@@ -103,7 +103,8 @@
                                         <td th:text="${res.age}">Age</td>
                                         <td th:text="${res.usesElevator} ? 'Yes' : 'No'">No</td>
                                         <td>
-                                                        <span th:if="${res.isOwner}" class="badge bg-warning text-dark">
+                                                        <span th:if="${res.isOwner}"
+                                                              class="badge bg-warning text-dark">
                                                             <i class="fas fa-crown"></i> Owner
                                                         </span>
                                             <span th:unless="${res.isOwner}"
@@ -171,8 +172,8 @@
                                         <div class="col-md-2">
                                             <label class="form-label small">Age</label>
                                             <label>
-                                                <input type="number" class="form-control form-control-sm" name="age"
-                                                       min="0" required>
+                                                <input type="number" class="form-control form-control-sm"
+                                                       name="age" min="0" required>
                                             </label>
                                         </div>
                                         <div class="col-md-2 d-flex align-items-end">

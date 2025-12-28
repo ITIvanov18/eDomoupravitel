@@ -16,6 +16,7 @@ public class CompanyDto {
 
     @NotBlank(message = "Company name is required")
     private String name;
+    private Long buildingCount;
 
     // помощен метод за превръщане от DTO в Entity (за запис в базата)
     public static Company toEntity(CompanyDto dto) {

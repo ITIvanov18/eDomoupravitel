@@ -14,13 +14,14 @@
 
 <div class="container mt-4 mb-5">
     <h2>Companies</h2>
-    <a href="/companies/create" class="btn btn-primary mb-3">Create New Company</a>
+    <a href="/companies/create" class="btn btn-primary btn-custom-create mb-3">Create New Company</a>
 
     <table class="table table-striped">
         <thead>
         <tr>
             <th>ID</th>
             <th>Name</th>
+            <th>Buildings Managed</th>
             <th>Actions</th>
         </tr>
         </thead>
@@ -28,7 +29,14 @@
         <tr th:each="company : ${companies}">
             <td th:text="${company.id}">1</td>
             <td th:text="${company.name}">Company Name</td>
+            <td th:text="${company.buildingCount}">0</td>
             <td>
+                <!-- Manage Button -->
+                <button type="button" class="btn btn-info btn-sm btn-manage-employees"
+                        th:data-company-id="${company.id}">
+                    Manage
+                </button>
+
                 <!-- Edit Button -->
                 <a th:href="@{/companies/edit/{id}(id=${company.id})}" class="btn btn-warning btn-sm">Edit</a>
 
@@ -42,6 +50,83 @@
         </tr>
         </tbody>
     </table>
+</div>
+
+<!-- Employee Management Modal -->
+<div class="modal fade" id="manageEmployeesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="manageModalTitle">Manage Employees</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs mb-3" id="manageTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="list-tab" data-bs-toggle="tab"
+                                data-bs-target="#list-pane" type="button" role="tab">Current Employees</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="assign-tab" data-bs-toggle="tab" data-bs-target="#assign-pane"
+                                type="button" role="tab">Assign Existing</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="create-tab" data-bs-toggle="tab" data-bs-target="#create-pane"
+                                type="button" role="tab">Create New</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="manageTabContent">
+                    <!-- Tab 1: List -->
+                    <div class="tab-pane fade show active" id="list-pane" role="tabpanel">
+                        <ul id="manageEmployeeList" class="list-group">
+                            <!-- Populated via JS -->
+                        </ul>
+                    </div>
+
+                    <!-- Tab 2: Assign -->
+                    <div class="tab-pane fade" id="assign-pane" role="tabpanel">
+                        <form id="assignEmployeeForm">
+                            <div class="mb-3">
+                                <label for="availableEmployeeSelect" class="form-label">Select Employee</label>
+                                <select class="form-select" id="availableEmployeeSelect" required>
+                                    <option value="" selected disabled>Loading...</option>
+                                </select>
+                                <div class="form-text">Only unassigned employees are listed.</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-plus"></i> Assign to Company
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Tab 3: Create -->
+                    <div class="tab-pane fade" id="create-pane" role="tabpanel">
+                        <form id="createEmployeeForm">
+                            <div class="mb-3">
+                                <label class="form-label">First Name</label>
+                                <label>
+                                    <input type="text" class="form-control" name="firstName" required>
+                                </label>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Last Name</label>
+                                <label>
+                                    <input type="text" class="form-control" name="lastName" required>
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-user-plus"></i> Create & Assign
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
     <div th:if="${#lists.isEmpty(companies)}" class="alert alert-info mt-3">
         No companies registered yet.
     </div>

@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -48,9 +47,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public List<CompanyDto> getAllCompanies() {
-        return companyRepository.findAll().stream()
-                .map(CompanyDto::fromEntity)
-                .collect(Collectors.toList());
+        return companyRepository.findAllWithBuildingCount();
     }
 
     @Override
@@ -73,4 +70,62 @@ public class CompanyServiceImpl implements CompanyService {
         employeeRepository.flush();
         companyRepository.delete(company);
     }
+
+    @Override
+    @Transactional
+    public void assignEmployee(Long companyId, Long employeeId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+
+        if (employee.getCompany() != null) {
+            throw new IllegalArgumentException("Employee is already assigned to a company");
+        }
+
+        employee.setCompany(company);
+        employeeRepository.save(employee);
+    }
+
+    @Override
+    @Transactional
+    public void removeEmployee(Long companyId, Long employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+
+        if (employee.getCompany() == null || !employee.getCompany().getId().equals(companyId)) {
+            throw new IllegalArgumentException("Employee is not assigned to this company");
+        }
+
+        employee.setCompany(null);
+        employeeRepository.save(employee);
+    }
+
+    @Override
+    @Transactional
+    public void createAndAssignEmployee(Long companyId, nbu.edomoupravitel.dto.EmployeeDto employeeDto) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+
+        Employee employee = nbu.edomoupravitel.dto.EmployeeDto.toEntity(employeeDto);
+        employee.setCompany(company);
+        employeeRepository.save(employee);
+    }
+
+    @Override
+    public List<nbu.edomoupravitel.dto.EmployeeDto> getCompanyEmployees(Long companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+        return employeeRepository.findByCompany(company).stream()
+                .map(nbu.edomoupravitel.dto.EmployeeDto::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    public List<nbu.edomoupravitel.dto.EmployeeDto> getAvailableEmployees() {
+        return employeeRepository.findByCompanyIsNull().stream()
+                .map(nbu.edomoupravitel.dto.EmployeeDto::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
 }

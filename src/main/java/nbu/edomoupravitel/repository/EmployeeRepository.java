@@ -11,4 +11,6 @@ import java.util.List;
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     // SELECT * FROM employees WHERE company_id = ?
     List<Employee> findByCompany(Company company);
+
+    List<Employee> findByCompanyIsNull();
 }
