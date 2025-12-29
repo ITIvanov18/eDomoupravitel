@@ -14,4 +14,6 @@ public interface EmployeeService {
     EmployeeDto getEmployee(Long id);
 
     List<EmployeeDto> getAllEmployees();
+
+    void redistributeBuildings(Long employeeId);
 }

@@ -8,6 +8,7 @@ import nbu.edomoupravitel.exception.ResourceNotFoundException;
 import nbu.edomoupravitel.repository.CompanyRepository;
 import nbu.edomoupravitel.repository.EmployeeRepository;
 import nbu.edomoupravitel.service.CompanyService;
+import nbu.edomoupravitel.service.EmployeeService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository companyRepository;
     private final EmployeeRepository employeeRepository;
+    private final EmployeeService employeeService;
 
     @Override
     public CompanyDto createCompany(CompanyDto companyDto) {
@@ -96,6 +98,9 @@ public class CompanyServiceImpl implements CompanyService {
         if (employee.getCompany() == null || !employee.getCompany().getId().equals(companyId)) {
             throw new IllegalArgumentException("Employee is not assigned to this company");
         }
+
+        // redistribute buildings before unassigning
+        employeeService.redistributeBuildings(employeeId);
 
         employee.setCompany(null);
         employeeRepository.save(employee);

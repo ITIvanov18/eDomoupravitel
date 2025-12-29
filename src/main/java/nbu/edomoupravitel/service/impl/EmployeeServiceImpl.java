@@ -60,47 +60,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    @Transactional // гарантира, че прехвърлянето на сгради и триенето стават заедно
-    public void deleteEmployee(Long id) {
-        Employee employeeToDelete = employeeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
-
-        // логика: re-assign buildings before delete
-        List<Building> buildingsToRedistribute = new ArrayList<>(employeeToDelete.getBuildings());
-
-        if (!buildingsToRedistribute.isEmpty()) {
-            Company company = employeeToDelete.getCompany();
-            // намира колегите от същата фирма
-            List<Employee> otherEmployees = employeeRepository.findByCompany(company).stream()
-                    .filter(e -> !e.getId().equals(id))
-                    .collect(Collectors.toList());
-
-            if (otherEmployees.isEmpty()) {
-                // ако няма на кого да се прехвърлят сградите, процесът бива прекратен
-                throw new LogicOperationException("Cannot delete employee " + id
-                        + ". They manage buildings and there are no other employees in the company to take over.");
-            }
-
-            // разпределя сградите една по една към най-малко натоварения служител
-            for (Building building : buildingsToRedistribute) {
-                // оптимизация: преоценка на минималната стойност, за да има стриктен баланс при местене на мн сгради
-                Employee targetEmployee = otherEmployees.stream()
-                        .min(Comparator.comparingInt(e -> e.getBuildings().size()))
-                        .orElse(otherEmployees.getFirst());
-
-                // прехвърляне на сградата
-                building.setEmployee(targetEmployee);
-
-                // актуализира списъка в паметта, за да може при следващата итерация
-                // count-ът да е верен (балансирано разпределение)
-                targetEmployee.getBuildings().add(building);
-            }
-        }
-
-        employeeRepository.delete(employeeToDelete);
-    }
-
-    @Override
     public EmployeeDto getEmployee(Long id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
@@ -112,5 +71,50 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeRepository.findAll().stream()
                 .map(EmployeeDto::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+
+    @Override
+    @Transactional
+    public void redistributeBuildings(Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
+
+        List<Building> buildingsToRedistribute = new ArrayList<>(employee.getBuildings());
+
+        if (!buildingsToRedistribute.isEmpty()) {
+            Company company = employee.getCompany();
+            if (company == null) {
+                return;
+            }
+
+            List<Employee> otherEmployees = employeeRepository.findByCompany(company).stream()
+                    .filter(e -> !e.getId().equals(id))
+                    .toList();
+
+            if (otherEmployees.isEmpty()) {
+                throw new LogicOperationException("Cannot redistribute buildings for employee " + id
+                        + ". There are no other employees in the company to take over.");
+            }
+
+            for (Building building : buildingsToRedistribute) {
+                Employee targetEmployee = otherEmployees.stream()
+                        .min(Comparator.comparingInt(e -> e.getBuildings().size()))
+                        .orElse(otherEmployees.getFirst());
+
+                building.setEmployee(targetEmployee);
+                targetEmployee.getBuildings().add(building);
+            }
+        }
+    }
+
+    @Override
+    @Transactional // гарантира, че прехвърлянето на сгради и триенето стават заедно
+    public void deleteEmployee(Long id) {
+        Employee employeeToDelete = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
+
+        redistributeBuildings(id);
+        employeeRepository.delete(employeeToDelete);
     }
 }
