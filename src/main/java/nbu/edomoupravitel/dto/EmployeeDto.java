@@ -1,6 +1,7 @@
 package nbu.edomoupravitel.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +21,10 @@ public class EmployeeDto {
     @NotBlank(message = "Last name is required")
     private String lastName;
 
+    @NotBlank(message = "Phone number is required")
+    @Pattern(regexp = "\\d{10}", message = "Phone number must be exactly 10 digits")
+    private String phoneNumber;
+
     private Long companyId;
     private String companyName;
 
@@ -29,6 +34,8 @@ public class EmployeeDto {
                 .id(dto.getId())
                 .firstName(dto.getFirstName())
                 .lastName(dto.getLastName())
+                .phoneNumber(dto.getPhoneNumber())
+                // компанията се задава от service-а
                 .build();
     }
 
@@ -38,6 +45,7 @@ public class EmployeeDto {
                 .id(entity.getId())
                 .firstName(entity.getFirstName())
                 .lastName(entity.getLastName())
+                .phoneNumber(entity.getPhoneNumber())
                 .companyId(entity.getCompany() != null ? entity.getCompany().getId() : null)
                 .companyName(entity.getCompany() != null ? entity.getCompany().getName() : null)
                 .build();

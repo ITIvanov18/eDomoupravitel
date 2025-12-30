@@ -24,7 +24,8 @@
             <th>Floors</th>
             <th>Apts</th>
             <th>Area</th>
-            <th>Employee</th>
+            <th>Managed by</th>
+            <th>Contact Person</th>
             <th>Actions</th>
         </tr>
         </thead>
@@ -35,8 +36,19 @@
             <td th:text="${building.floors}">5</td>
             <td th:text="${building.numberOfApartments}">10</td>
             <td th:text="${building.area}">100.0</td>
-            <td th:text="${building.employeeName} != null ? 'ID: ' + ${building.employeeName} : 'Unassigned'">
-                Employee</td>
+            <td
+                    th:text="${building.employeeCompanyName} != null ? ${building.employeeCompanyName} : 'Unmanaged'">
+                Managed by</td>
+            <td>
+                <div th:if="${building.employeeName} != null">
+                    <div th:text="${building.employeeName}" class="fw-semibold">Name</div>
+                    <div th:if="${building.employeePhoneNumber} != null" class="text-muted small">
+                        <i class="fas fa-phone-alt me-1"></i>
+                        <span th:text="${building.employeePhoneNumber}">Phone</span>
+                    </div>
+                </div>
+                <span th:if="${building.employeeName} == null" class="text-muted fst-italic">Unassigned</span>
+            </td>
             <td>
                 <a th:href="@{/apartments(buildingId=${building.id})}" class="btn btn-info btn-sm">View Apts</a>
 

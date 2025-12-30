@@ -106,7 +106,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const formData = new FormData(createForm);
             const data = {
                 firstName: formData.get('firstName'),
-                lastName: formData.get('lastName')
+                lastName: formData.get('lastName'),
+                phoneNumber: formData.get('phoneNumber')
             };
 
             fetch(`/companies/${currentCompanyId}/employees/create`, {
@@ -197,13 +198,37 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch(`/companies/${companyId}/employees/${empId}`, {
             method: 'DELETE'
         })
-            .then(response => {
+            .then(async response => {
                 if (response.ok) {
                     loadCompanyData(companyId); // Reload data
                 } else {
-                    alert('Failed to remove employee.');
+                    const errorMessage = await response.text();
+                    alert(errorMessage || 'Failed to remove employee.');
                 }
             })
             .catch(error => console.error('Error:', error));
+    }
+});
+
+// Edit Employee Modal
+document.addEventListener('DOMContentLoaded', function () {
+    const editModal = document.getElementById('editEmployeeModal');
+    if (editModal) {
+        editModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-id');
+            const firstName = button.getAttribute('data-firstname');
+            const lastName = button.getAttribute('data-lastname');
+            const phoneNumber = button.getAttribute('data-phone');
+            const companyId = button.getAttribute('data-company-id');
+
+            const form = document.getElementById('editEmployeeForm');
+            form.action = '/employees/edit/' + id;
+
+            document.getElementById('editFirstName').value = firstName;
+            document.getElementById('editLastName').value = lastName;
+            document.getElementById('editPhoneNumber').value = phoneNumber;
+            document.getElementById('editCompanyId').value = companyId;
+        });
     }
 });

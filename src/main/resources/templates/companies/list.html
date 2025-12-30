@@ -115,6 +115,11 @@
                                     <input type="text" class="form-control" name="lastName" required>
                                 </label>
                             </div>
+                            <div class="mb-3">
+                                <label class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" name="phoneNumber" required pattern="\d{10}"
+                                       title="10 digits">
+                            </div>
                             <button type="submit" class="btn btn-success w-100">
                                 <i class="fas fa-user-plus"></i> Create & Assign
                             </button>

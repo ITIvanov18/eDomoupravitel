@@ -8,8 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import nbu.edomoupravitel.entity.Building;
 
-@Data
-@Builder
+@Data // Lombok: aвтоматично генерира getters, setters, toString, equals, hashCode
+@Builder // Lombok: позволява създаване на обекти чрез pattern (BuildingDto.builder())
 @NoArgsConstructor
 @AllArgsConstructor
 public class BuildingDto {
@@ -32,8 +32,12 @@ public class BuildingDto {
 
     private Long employeeId;
     private String employeeName;
-    private Long companyId; // used for creation context
+    private String employeePhoneNumber;
+    private String employeeCompanyName;
+    private Long companyId;
 
+    // преобразуване DTO -> Entity
+    // използва се, когато получаваме данни от формата за create/edit
     public static Building toEntity(BuildingDto dto) {
         return Building.builder()
                 .id(dto.getId())
@@ -42,10 +46,12 @@ public class BuildingDto {
                 .numberOfApartments(dto.getNumberOfApartments())
                 .area(dto.getArea())
                 .commonPartsArea(dto.getCommonPartsArea())
-                // Employee set via service logic
+                // employee се задава чрез service логиката
                 .build();
     }
 
+    // преобразуване Entity -> DTO
+    // ползва се при зареждане на списъка със сгради, за да се покаже на екрана
     public static BuildingDto fromEntity(Building entity) {
         return BuildingDto.builder()
                 .id(entity.getId())
@@ -57,6 +63,14 @@ public class BuildingDto {
                 .employeeId(entity.getEmployee() != null ? entity.getEmployee().getId() : null)
                 .employeeName(entity.getEmployee() != null
                         ? entity.getEmployee().getFirstName() + " " + entity.getEmployee().getLastName()
+                        : null)
+                .employeePhoneNumber(entity.getEmployee() != null ? entity.getEmployee().getPhoneNumber() : null)
+
+                // deep traversal: Building -> Employee -> Company -> Name
+                // проверка дали има Служител И дали този служител има Компания.
+                // ако веригата е прекъсната някъде, връща null, за да не гръмне приложението
+                .employeeCompanyName(entity.getEmployee() != null && entity.getEmployee().getCompany() != null
+                        ? entity.getEmployee().getCompany().getName()
                         : null)
                 .build();
     }

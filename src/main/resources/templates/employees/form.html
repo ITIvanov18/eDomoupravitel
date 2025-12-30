@@ -23,6 +23,13 @@
             <label for="lastName" class="form-label">Last Name</label>
             <input type="text" class="form-control" id="lastName" th:field="*{lastName}" required>
         </div>
+        <div class="mb-3">
+            <label for="phoneNumber" class="form-label">Phone Number</label>
+            <input type="text" class="form-control" id="phoneNumber" th:field="*{phoneNumber}" required
+                   pattern="\d{10}" title="Ten digits">
+            <div th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}" class="text-danger">Error
+            </div>
+        </div>
 
         <div class="mb-3">
             <label for="companyId" class="form-label">Company</label>

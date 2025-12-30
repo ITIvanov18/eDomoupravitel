@@ -47,6 +47,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employee.setFirstName(employeeDto.getFirstName());
         employee.setLastName(employeeDto.getLastName());
+        employee.setPhoneNumber(employeeDto.getPhoneNumber());
 
         // обновяване на компанията, ако е сменена
         if (employeeDto.getCompanyId() != null && !employeeDto.getCompanyId().equals(employee.getCompany().getId())) {
@@ -93,8 +94,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                     .toList();
 
             if (otherEmployees.isEmpty()) {
-                throw new LogicOperationException("Cannot redistribute buildings for employee " + id
-                        + ". There are no other employees in the company to take over.");
+                throw new LogicOperationException(
+                        "Failed to remove employee. There are no other employees in the company to take over their buildings.");
             }
 
             for (Building building : buildingsToRedistribute) {

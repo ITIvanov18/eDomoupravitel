@@ -22,6 +22,7 @@ public class EmployeeController {
     @GetMapping
     public String listEmployees(Model model) {
         model.addAttribute("employees", employeeService.getAllEmployees());
+        model.addAttribute("companies", companyService.getAllCompanies());
         return "employees/list";
     }
 
@@ -40,6 +41,24 @@ public class EmployeeController {
             return "employees/form";
         }
         employeeService.createEmployee(employeeDto);
+        return "redirect:/employees";
+    }
+
+    @GetMapping("/edit/{id}")
+    public String editEmployeeForm(@PathVariable Long id, Model model) {
+        model.addAttribute("employee", employeeService.getEmployee(id));
+        model.addAttribute("companies", companyService.getAllCompanies());
+        return "employees/form";
+    }
+
+    @PostMapping("/edit/{id}")
+    public String updateEmployee(@PathVariable Long id, @Valid @ModelAttribute("employee") EmployeeDto employeeDto,
+                                 BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            model.addAttribute("companies", companyService.getAllCompanies());
+            return "employees/form";
+        }
+        employeeService.updateEmployee(id, employeeDto);
         return "redirect:/employees";
     }
 

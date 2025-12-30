@@ -4,6 +4,7 @@ import nbu.edomoupravitel.dto.EmployeeDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import nbu.edomoupravitel.dto.CompanyDto;
+import nbu.edomoupravitel.exception.LogicOperationException;
 import nbu.edomoupravitel.service.CompanyService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -85,9 +86,13 @@ public class CompanyController {
     @DeleteMapping("/{id}/employees/{employeeId}")
     @ResponseBody
     public ResponseEntity<?> removeEmployee(@PathVariable Long id,
-                                                                     @PathVariable Long employeeId) {
-        companyService.removeEmployee(id, employeeId);
-        return ResponseEntity.ok().build();
+        @PathVariable Long employeeId) {
+        try {
+            companyService.removeEmployee(id, employeeId);
+            return org.springframework.http.ResponseEntity.ok().build();
+        } catch (LogicOperationException | IllegalArgumentException e) {
+            return org.springframework.http.ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("/{id}/employees/create")
