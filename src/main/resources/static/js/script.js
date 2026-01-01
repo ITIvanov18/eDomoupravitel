@@ -1,3 +1,4 @@
+/* global bootstrap */
 
 /*    Animated Counters (Dashboard)    */
 // числата се въртят от 0 до крайната стойност плавно
@@ -86,9 +87,9 @@ document.addEventListener('DOMContentLoaded', function () {
             })
                 .then(response => {
                     if (response.ok) {
-                        loadCompanyData(currentCompanyId); // Reload data
-                        // Switch to list tab
+                        loadCompanyData(currentCompanyId);
                         const triggerEl = document.querySelector('#manageTabs button[data-bs-target="#list-pane"]');
+                        // @ts-ignore
                         bootstrap.Tab.getInstance(triggerEl).show();
                     } else {
                         alert('Failed to assign employee.');
@@ -210,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// Edit Employee Modal
+// Handle Edit Employee Modal
 document.addEventListener('DOMContentLoaded', function () {
     const editModal = document.getElementById('editEmployeeModal');
     if (editModal) {
@@ -232,3 +233,93 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+
+
+// Open Edit Company Modal
+window.openEditCompanyModal = function (id) {
+    const modalElement = document.getElementById('editCompanyModal');
+    const modal = new bootstrap.Modal(modalElement);
+    const form = document.getElementById('editCompanyForm');
+    const nameInput = document.getElementById('editCompanyName');
+
+    // Fetch company data
+    fetch(`/companies/${id}/data`)
+        .then(response => response.json())
+        .then(data => {
+            // @ts-ignore
+            if (data && data.company) {
+                // @ts-ignore
+                nameInput.value = data.company.name;
+                form.action = `/companies/edit/${id}`;
+                modal.show();
+            } else {
+                alert('Failed to load company data.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while loading data.');
+        });
+};
+
+// Handle Pay Fee Modal (Apartments List)
+document.addEventListener('DOMContentLoaded', function () {
+    const payModal = document.getElementById('payModal');
+    if (payModal) {
+        payModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const apartmentId = button.getAttribute('data-apartment-id');
+            const amount = button.getAttribute('data-amount');
+
+            const idInput = payModal.querySelector('#payApartmentId');
+            const amountInput = payModal.querySelector('#payAmount');
+
+            idInput.value = apartmentId;
+            if (amount) {
+                amountInput.value = amount;
+            }
+        });
+    }
+});
+
+// Open Edit Building Modal
+window.openEditBuildingModal = function (id) {
+    const modalElement = document.getElementById('editBuildingModal');
+    // @ts-ignore
+    const modal = new bootstrap.Modal(modalElement);
+    const form = document.getElementById('editBuildingForm');
+
+    // Inputs
+    const address = document.getElementById('editAddress');
+    const floors = document.getElementById('editFloors');
+    const apts = document.getElementById('editNumberOfApartments');
+    const area = document.getElementById('editArea');
+    const common = document.getElementById('editCommonPartsArea');
+    const company = document.getElementById('editCompanyId');
+
+    fetch(`/buildings/${id}/data`)
+        .then(response => response.json())
+        .then(data => {
+            if (data) {
+                address.value = data.address;
+                floors.value = data.floors;
+                apts.value = data.numberOfApartments;
+                area.value = data.area;
+                common.value = data.commonPartsArea || '';
+                if (data.companyId) {
+                    company.value = data.companyId;
+                } else if (data.company && data.company.id) {
+                    company.value = data.company.id;
+                }
+
+                form.action = `/buildings/edit/${id}`;
+                modal.show();
+            } else {
+                alert('Failed to load building data.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while loading data.');
+        });
+};

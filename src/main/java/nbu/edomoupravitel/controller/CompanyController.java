@@ -23,6 +23,7 @@ public class CompanyController {
     @GetMapping
     public String listCompanies(Model model) {
         model.addAttribute("companies", companyService.getAllCompanies());
+        model.addAttribute("newCompany", new CompanyDto());
         return "companies/list";
     }
 

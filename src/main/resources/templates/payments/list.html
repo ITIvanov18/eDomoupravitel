@@ -16,9 +16,10 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Payments History</h2>
         <div>
-            <a href="/payments/create" class="btn btn-success me-2">
+            <button type="button" class="btn btn-success me-2" data-bs-toggle="modal"
+                    data-bs-target="#createPaymentModal">
                 <i class="fas fa-plus"></i> Record Payment
-            </a>
+            </button>
             <a href="/payments/export" class="btn btn-outline-dark">
                 <i class="fas fa-file-csv"></i> Export CSV
             </a>
@@ -75,6 +76,38 @@
                 </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+
+<!-- Create Payment Modal -->
+<div class="modal fade" id="createPaymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Record Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/payments/create" method="post">
+                    <div class="mb-3">
+                        <label for="apartmentId" class="form-label">Apartment ID</label>
+                        <input type="number" class="form-control" id="apartmentId" name="apartmentId" required>
+                        <div class="form-text">Enter the ID of the apartment paying the fee.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount</label>
+                        <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
+                    </div>
+
+                    <div class="modal-footer px-0 pb-0">
+                        <button type="submit" class="btn btn-success">Pay</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
