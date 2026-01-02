@@ -246,10 +246,11 @@ window.openEditCompanyModal = function (id) {
     fetch(`/companies/${id}/data`)
         .then(response => response.json())
         .then(data => {
-            // @ts-ignore
             if (data && data.company) {
-                // @ts-ignore
                 nameInput.value = data.company.name;
+                document.getElementById('editTaxPerSqM').value = data.company.taxPerSqM;
+                document.getElementById('editElevatorTax').value = data.company.elevatorTax;
+                document.getElementById('editPetTax').value = data.company.petTax;
                 form.action = `/companies/edit/${id}`;
                 modal.show();
             } else {

@@ -36,6 +36,10 @@ public class CompanyServiceImpl implements CompanyService {
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found with id: " + id));
 
         company.setName(companyDto.getName());
+        company.setTaxPerSqM(companyDto.getTaxPerSqM());
+        company.setElevatorTax(companyDto.getElevatorTax());
+        company.setPetTax(companyDto.getPetTax());
+        
         Company savedCompany = companyRepository.save(company);
         return CompanyDto.fromEntity(savedCompany);
     }

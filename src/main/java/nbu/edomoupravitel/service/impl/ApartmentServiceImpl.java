@@ -23,10 +23,6 @@ public class ApartmentServiceImpl implements ApartmentService {
     private final PaymentRepository paymentRepository;
     private final ResidentRepository residentRepository;
 
-    private static final double BASE_TAX = 1.00; // такса на кв.м
-    private static final double ELEVATOR_TAX = 10.00; // такса за живущ над 7 г., ползващ асансьор
-    private static final double PET_TAX = 5.00; // такса за домашен любимец
-
     @Override
     @Transactional
     public ApartmentDto createApartment(ApartmentDto apartmentDto) {
@@ -82,21 +78,7 @@ public class ApartmentServiceImpl implements ApartmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Apartment not found with id: " + id));
 
         List<Payment> payments = paymentRepository.findByApartment(apartment);
-
-        // unlink на плащанията с апартамента
-        // не се трият, за да не губим отчетност
-        String historySnapshot = String.format("ARCHIVED: %s, , Floor %d, Ap. %d",
-                apartment.getBuilding().getAddress(),
-                apartment.getFloor(),
-        apartment.getApartmentNumber());
-
-        for (Payment payment : payments) {
-            // ЗАПАЗВА ИСТОРИЯТА
-            payment.setAuditDetails(historySnapshot);
-            // КЪСА ВРЪЗКАТА
-            payment.setApartment(null);
-            paymentRepository.save(payment);
-        }
+        paymentRepository.deleteAll(payments);
 
         // (cascade delete) - ако няма апартамент, няма и жители
         // трием ги, за да не гръмне следващият constraint
@@ -150,14 +132,31 @@ public class ApartmentServiceImpl implements ApartmentService {
     }
 
     private double calculateFeeInternal(Apartment apartment) {
-        double areaFee = apartment.getArea() * BASE_TAX;
+
+        // Default values if no company associated (fallback)
+        double taxPerSqM = 0;
+        double elevatorTax = 0;
+        double petTax = 0;
+
+        // Fetch Company custom rates (mandatory fields)
+        if (apartment.getBuilding() != null &&
+                apartment.getBuilding().getEmployee() != null &&
+                apartment.getBuilding().getEmployee().getCompany() != null) {
+
+            Company company = apartment.getBuilding().getEmployee().getCompany();
+            taxPerSqM = company.getTaxPerSqM();
+            elevatorTax = company.getElevatorTax();
+            petTax = company.getPetTax();
+        }
+
+        double areaFee = apartment.getArea() * taxPerSqM;
 
         long residentsUsingElevator = apartment.getResidents() != null ? apartment.getResidents().stream()
                 .filter(r -> r.getAge() > 7 && r.isUsesElevator())
                 .count() : 0;
-        double elevatorFee = residentsUsingElevator * ELEVATOR_TAX;
+        double elevatorFee = residentsUsingElevator * elevatorTax;
 
-        double petFee = apartment.isHasPet() ? PET_TAX : 0.0;
+        double petFee = apartment.isHasPet() ? petTax : 0.0;
 
         return areaFee + elevatorFee + petFee;
     }

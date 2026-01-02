@@ -30,4 +30,17 @@ public class Company {
     @EqualsAndHashCode.Exclude // предотвратява безкрайна рекурсия (StackOverflow) при двупосочни връзки
     @Builder.Default // защита от NullPointerException
     private List<Employee> employees = new ArrayList<>();
+
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Double taxPerSqM = 0.0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Double elevatorTax = 0.0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Double petTax = 0.0;
 }

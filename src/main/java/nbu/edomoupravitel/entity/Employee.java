@@ -26,10 +26,7 @@ public class Employee {
     @Column(nullable = false)
     private String lastName;
 
-    // използвам @Pattern за валидация на формата (точно 10 цифри) на ниво приложение,
-    // а @Column ограничава дължината физически в базата данни за цялост на данните
     @Column(nullable = true, length = 10)
-    @Pattern(regexp = "\\d{10}", message = "Phone number must be exactly 10 digits")
     private String phoneNumber;
 
     // не се зареждат всички данни за компанията,
