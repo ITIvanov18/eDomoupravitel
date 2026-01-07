@@ -3,6 +3,7 @@ package nbu.edomoupravitel.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import nbu.edomoupravitel.dto.BuildingDto;
+import nbu.edomoupravitel.dto.ResidentDto;
 import nbu.edomoupravitel.exception.LogicOperationException;
 import nbu.edomoupravitel.service.BuildingService;
 import nbu.edomoupravitel.service.CompanyService;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/buildings")
@@ -61,12 +64,19 @@ public class BuildingController {
 
     @PutMapping("/edit/{id}")
     public String updateBuilding(@PathVariable Long id, @Valid @ModelAttribute("building") BuildingDto buildingDto,
-                                 BindingResult result, Model model) {
+                                 BindingResult result) {
         if (result.hasErrors()) {
             throw new LogicOperationException(
                     "Validation failed: " + result.getAllErrors().getFirst().getDefaultMessage());
         }
         buildingService.updateBuilding(id, buildingDto);
         return "redirect:/buildings";
+    }
+
+    @GetMapping("/{id}/residents")
+    @ResponseBody
+    public List<ResidentDto> getBuildingResidents(@PathVariable Long id,
+                                                  @RequestParam(required = false, defaultValue = "name_asc") String sort) {
+        return buildingService.getResidentsForBuilding(id, sort);
     }
 }

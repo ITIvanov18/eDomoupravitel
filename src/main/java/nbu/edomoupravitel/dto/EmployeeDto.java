@@ -6,7 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import nbu.edomoupravitel.entity.Building;
 import nbu.edomoupravitel.entity.Employee;
+
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -27,6 +33,8 @@ public class EmployeeDto {
 
     private Long companyId;
     private String companyName;
+    private int buildingCount;
+    private List<String> buildingAddresses;
 
     // преобразуване DTO -> Entity (без връзката с Company, тя се прави в сървиса)
     public static Employee toEntity(EmployeeDto dto) {
@@ -41,6 +49,13 @@ public class EmployeeDto {
 
     // преобразуване Entity -> DTO (зарежда се името на фирмата за UI)
     public static EmployeeDto fromEntity(Employee entity) {
+        List<String> addresses = entity.getBuildings() != null
+                ? entity.getBuildings().stream()
+                .map(Building::getAddress)
+                .collect(Collectors.toList())
+                : new ArrayList<>();
+
+
         return EmployeeDto.builder()
                 .id(entity.getId())
                 .firstName(entity.getFirstName())
@@ -48,6 +63,8 @@ public class EmployeeDto {
                 .phoneNumber(entity.getPhoneNumber())
                 .companyId(entity.getCompany() != null ? entity.getCompany().getId() : null)
                 .companyName(entity.getCompany() != null ? entity.getCompany().getName() : null)
+                .buildingCount(addresses.size())
+                .buildingAddresses(addresses)
                 .build();
     }
 }

@@ -27,7 +27,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final CompanyRepository companyRepository;
 
     @Override
-    public EmployeeDto createEmployee(EmployeeDto employeeDto) {
+    public void createEmployee(EmployeeDto employeeDto) {
         // намира фирмата по ID от падащото меню
         Company company = companyRepository.findById(employeeDto.getCompanyId())
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found with id: " + employeeDto.getCompanyId()));
@@ -37,11 +37,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setCompany(company);
 
         Employee savedEmployee = employeeRepository.save(employee);
-        return EmployeeDto.fromEntity(savedEmployee);
+        EmployeeDto.fromEntity(savedEmployee);
     }
 
     @Override
-    public EmployeeDto updateEmployee(Long id, EmployeeDto employeeDto) {
+    public void updateEmployee(Long id, EmployeeDto employeeDto) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
 
@@ -57,7 +57,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         Employee savedEmployee = employeeRepository.save(employee);
-        return EmployeeDto.fromEntity(savedEmployee);
+        EmployeeDto.fromEntity(savedEmployee);
     }
 
     @Override
@@ -68,10 +68,33 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public List<EmployeeDto> getAllEmployees() {
-        return employeeRepository.findAll().stream()
+    public List<EmployeeDto> getAllEmployees(String sortBy) {
+        List<EmployeeDto> employees = employeeRepository.findAll().stream()
                 .map(EmployeeDto::fromEntity)
                 .collect(Collectors.toList());
+
+
+        if (sortBy == null || sortBy.isEmpty()) {
+            return employees;
+        }
+
+        switch (sortBy) {
+            case "name_asc":
+                employees.sort(Comparator.comparing(EmployeeDto::getFirstName)
+                        .thenComparing(EmployeeDto::getLastName));
+                break;
+            case "name_desc":
+                employees.sort(Comparator.comparing(EmployeeDto::getFirstName)
+                        .thenComparing(EmployeeDto::getLastName).reversed());
+                break;
+            case "buildings_desc": // Most workloads at top
+                employees.sort(Comparator.comparingInt(EmployeeDto::getBuildingCount).reversed());
+                break;
+            case "buildings_asc": // Least workloads at top
+                employees.sort(Comparator.comparingInt(EmployeeDto::getBuildingCount));
+                break;
+        }
+        return employees;
     }
 
 

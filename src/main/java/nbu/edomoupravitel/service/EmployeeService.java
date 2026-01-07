@@ -5,15 +5,15 @@ import java.util.List;
 
 // интерфейсът дефинира какво прави програмата, без да казва как
 public interface EmployeeService {
-    EmployeeDto createEmployee(EmployeeDto employeeDto);
+    void createEmployee(EmployeeDto employeeDto);
 
-    EmployeeDto updateEmployee(Long id, EmployeeDto employeeDto);
+    void updateEmployee(Long id, EmployeeDto employeeDto);
 
     void deleteEmployee(Long id);
 
     EmployeeDto getEmployee(Long id);
 
-    List<EmployeeDto> getAllEmployees();
+    List<EmployeeDto> getAllEmployees(String sortBy);
 
     void redistributeBuildings(Long employeeId);
 }

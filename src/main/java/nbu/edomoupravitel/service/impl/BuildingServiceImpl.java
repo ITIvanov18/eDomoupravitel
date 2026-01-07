@@ -2,6 +2,7 @@ package nbu.edomoupravitel.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import nbu.edomoupravitel.dto.BuildingDto;
+import nbu.edomoupravitel.dto.ResidentDto;
 import nbu.edomoupravitel.entity.Apartment;
 import nbu.edomoupravitel.entity.Building;
 import nbu.edomoupravitel.entity.Company;
@@ -104,5 +105,46 @@ public class BuildingServiceImpl implements BuildingService {
         }
 
         buildingRepository.delete(building);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Building findBuildingById(Long id) {
+        return buildingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Building not found with id: " + id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ResidentDto> getResidentsForBuilding(Long buildingId, String sort) {
+        // използва съществуващия метод, за да намери сградата
+        Building building = findBuildingById(buildingId);
+
+        // събира всички жители
+        List<ResidentDto> residents = building.getApartments().stream()
+                .flatMap(apt -> apt.getResidents().stream())
+                .map(ResidentDto::fromEntity)
+                .collect(Collectors.toList());
+
+        // сортиране
+        if (sort != null) {
+            switch (sort) {
+                case "name_asc":
+                    residents.sort(Comparator.comparing(ResidentDto::getFirstName)
+                            .thenComparing(ResidentDto::getLastName));
+                    break;
+                case "name_desc":
+                    residents.sort(Comparator.comparing(ResidentDto::getFirstName)
+                            .thenComparing(ResidentDto::getLastName).reversed());
+                    break;
+                case "age_asc":
+                    residents.sort(Comparator.comparingInt(ResidentDto::getAge));
+                    break;
+                case "age_desc":
+                    residents.sort(Comparator.comparingInt(ResidentDto::getAge).reversed());
+                    break;
+            }
+        }
+        return residents;
     }
 }

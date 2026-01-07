@@ -211,25 +211,31 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+
 // Handle Edit Employee Modal
 document.addEventListener('DOMContentLoaded', function () {
     const editModal = document.getElementById('editEmployeeModal');
     if (editModal) {
         editModal.addEventListener('show.bs.modal', function (event) {
+            // бутонът, който е отворил модала
             const button = event.relatedTarget;
+
+            // взима данните от бутона
             const id = button.getAttribute('data-id');
             const firstName = button.getAttribute('data-firstname');
             const lastName = button.getAttribute('data-lastname');
-            const phoneNumber = button.getAttribute('data-phone');
+            const phone = button.getAttribute('data-phone');
             const companyId = button.getAttribute('data-company-id');
 
-            const form = document.getElementById('editEmployeeForm');
-            form.action = '/employees/edit/' + id;
+            // чрез 'this' търси елементите само вътре в модала
+            const modal = this;
 
-            document.getElementById('editFirstName').value = firstName;
-            document.getElementById('editLastName').value = lastName;
-            document.getElementById('editPhoneNumber').value = phoneNumber;
-            document.getElementById('editCompanyId').value = companyId;
+            // попълва скрития input за ID и останалите полета
+            modal.querySelector('#editId').value = id;
+            modal.querySelector('#editFirstName').value = firstName;
+            modal.querySelector('#editLastName').value = lastName;
+            modal.querySelector('#editPhoneNumber').value = phone;
+            modal.querySelector('#editCompanyId').value = companyId || "";
         });
     }
 });
@@ -242,7 +248,7 @@ window.openEditCompanyModal = function (id) {
     const form = document.getElementById('editCompanyForm');
     const nameInput = document.getElementById('editCompanyName');
 
-    // Fetch company data
+    // взима данните от бутона
     fetch(`/companies/${id}/data`)
         .then(response => response.json())
         .then(data => {
@@ -262,6 +268,7 @@ window.openEditCompanyModal = function (id) {
             alert('An error occurred while loading data.');
         });
 };
+
 
 // Handle Pay Fee Modal (Apartments List)
 document.addEventListener('DOMContentLoaded', function () {
@@ -286,11 +293,10 @@ document.addEventListener('DOMContentLoaded', function () {
 // Open Edit Building Modal
 window.openEditBuildingModal = function (id) {
     const modalElement = document.getElementById('editBuildingModal');
-    // @ts-ignore
     const modal = new bootstrap.Modal(modalElement);
     const form = document.getElementById('editBuildingForm');
 
-    // Inputs
+    // взима данните от бутона
     const address = document.getElementById('editAddress');
     const floors = document.getElementById('editFloors');
     const apts = document.getElementById('editNumberOfApartments');
@@ -324,3 +330,88 @@ window.openEditBuildingModal = function (id) {
             alert('An error occurred while loading data.');
         });
 };
+
+
+// -------------------------------------------------------------------
+// Residents List Logic (Buildings Page)
+// -------------------------------------------------------------------
+let currentBuildingIdForResidents = null;
+
+// функция, която се вика от бутона в таблицата
+function loadResidents(buildingId) {
+    currentBuildingIdForResidents = buildingId;
+
+    // взима текущата стойност на сортирането
+    const sortSelect = document.getElementById('residentSortSelect');
+    const sortValue = sortSelect ? sortSelect.value : 'name_asc';
+
+    fetchResidents(buildingId, sortValue);
+
+    // отваря модала
+    const modalElement = document.getElementById('residentsModal');
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }
+}
+
+// слушател за промяна на сортирането (докато модалът е отворен)
+document.addEventListener('DOMContentLoaded', function () {
+    const sortSelect = document.getElementById('residentSortSelect');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function () {
+            if (currentBuildingIdForResidents) {
+                fetchResidents(currentBuildingIdForResidents, this.value);
+            }
+        });
+    }
+});
+
+// AJAX заявка към контролера
+function fetchResidents(buildingId, sort) {
+    const container = document.getElementById('residentsListContainer');
+    container.innerHTML = '<div class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin me-2"></i>Loading residents...</div>';
+
+    fetch(`/buildings/${buildingId}/residents?sort=${sort}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="far fa-user fa-2x mb-2 opacity-25"></i><br>
+                        No residents found in this building.
+                    </div>`;
+                return;
+            }
+
+            // генерира списък
+            let html = '<ul class="list-group list-group-flush">';
+            data.forEach(resident => {
+                html += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 35px; height: 35px;">
+                                <i class="fas fa-user text-secondary small"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark">${resident.firstName} ${resident.lastName}</div>
+                                <div class="small text-muted">
+                                    <i class="fas fa-home me-1"></i> Apt. ${resident.apartmentNumber || 'N/A'}
+                                </div>
+                            </div>
+                        </div>
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">
+                            ${resident.age} years
+                        </span>
+                    </li>
+                `;
+            });
+            html += '</ul>';
+            container.innerHTML = html;
+        })
+        .catch(err => {
+            console.error(err);
+            container.innerHTML = '<div class="text-danger text-center py-3">Error loading data.</div>';
+        });
+}
+

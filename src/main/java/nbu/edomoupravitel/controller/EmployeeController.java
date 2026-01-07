@@ -20,9 +20,10 @@ public class EmployeeController {
     private final CompanyService companyService;
 
     @GetMapping
-    public String listEmployees(Model model) {
-        model.addAttribute("employees", employeeService.getAllEmployees());
+    public String listEmployees(@RequestParam(required = false, defaultValue = "name_asc") String sort, Model model) {
+        model.addAttribute("employees", employeeService.getAllEmployees(sort));
         model.addAttribute("companies", companyService.getAllCompanies());
+        model.addAttribute("currentSort", sort);
         return "employees/list";
     }
 

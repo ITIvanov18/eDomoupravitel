@@ -1,6 +1,8 @@
 package nbu.edomoupravitel.service;
 
 import nbu.edomoupravitel.dto.BuildingDto;
+import nbu.edomoupravitel.dto.ResidentDto;
+import nbu.edomoupravitel.entity.Building;
 
 import java.util.List;
 
@@ -15,4 +17,9 @@ public interface BuildingService {
     BuildingDto getBuilding(Long id);
 
     List<BuildingDto> getAllBuildings();
+
+
+    Building findBuildingById(Long id);
+
+    List<ResidentDto> getResidentsForBuilding(Long buildingId, String sort);
 }

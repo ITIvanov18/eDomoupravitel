@@ -39,7 +39,7 @@ public class CompanyServiceImpl implements CompanyService {
         company.setTaxPerSqM(companyDto.getTaxPerSqM());
         company.setElevatorTax(companyDto.getElevatorTax());
         company.setPetTax(companyDto.getPetTax());
-        
+
         Company savedCompany = companyRepository.save(company);
         return CompanyDto.fromEntity(savedCompany);
     }

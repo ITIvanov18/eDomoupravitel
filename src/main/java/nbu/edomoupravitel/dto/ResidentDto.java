@@ -30,6 +30,8 @@ public class ResidentDto {
 
     private Long apartmentId;
 
+    private String apartmentNumber;
+
     public static Resident toEntity(ResidentDto dto) {
         return Resident.builder()
                 .id(dto.getId())
@@ -59,6 +61,9 @@ public class ResidentDto {
                 .age(entity.getAge())
                 .usesElevator(entity.isUsesElevator())
                 .apartmentId(entity.getApartment() != null ? entity.getApartment().getId() : null)
+                .apartmentNumber(
+                        entity.getApartment() != null ? String.valueOf(entity.getApartment().getApartmentNumber())
+                                : "N/A")
                 .isOwner(isOwner)
                 .build();
     }

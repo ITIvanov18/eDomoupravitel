@@ -35,6 +35,8 @@ public class BuildingDto {
     private String employeePhoneNumber;
     private String employeeCompanyName;
     private Long companyId;
+    private String companyName;
+    private int residentCount;
 
     // преобразуване DTO -> Entity
     // използва се, когато получаваме данни от формата за create/edit
@@ -69,9 +71,13 @@ public class BuildingDto {
                 // deep traversal: Building -> Employee -> Company -> Name
                 // проверка дали има Служител И дали този служител има Компания.
                 // ако веригата е прекъсната някъде, връща null, за да не гръмне приложението
-                .employeeCompanyName(entity.getEmployee() != null && entity.getEmployee().getCompany() != null
+                .companyName(entity.getEmployee() != null && entity.getEmployee().getCompany() != null
                         ? entity.getEmployee().getCompany().getName()
                         : null)
+                .residentCount(entity.getApartments() != null ? entity.getApartments().stream()
+                        .mapToInt(apt -> apt.getResidents() != null ? apt.getResidents().size()
+                                : 0)
+                        .sum() : 0)
                 .build();
     }
 }
