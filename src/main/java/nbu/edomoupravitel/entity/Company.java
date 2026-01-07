@@ -23,9 +23,8 @@ public class Company {
     @Column(nullable = false, unique = true)
     private String name;
 
-    // orphanRemoval = true: каквото се изтрие от тук се трие и от базата
-    // CascadeType.ALL: Всички CRUD операции по фирмата се предават на служителите
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+    // CascadeType.ALL ползвам, за да може всички CRUD операции по фирмата се предават на служителите
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude // предотвратява безкрайна рекурсия (StackOverflow) при двупосочни връзки
     @Builder.Default // защита от NullPointerException

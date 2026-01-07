@@ -98,12 +98,19 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
 
+    /**
+     * преди да бъде изтрит служител, неговите сгради се преразпределят
+     * към другите колеги от същата фирма
+     * Load Balancing методът търси колегата с най-малък брой текущи сгради
+     * и прехвърля отговорността на него. Така има равномерен товар върху екипа
+     */
     @Override
     @Transactional
     public void redistributeBuildings(Long id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
 
+        // копие на списъка, за да се избегне ConcurrentModificationException при итерация
         List<Building> buildingsToRedistribute = new ArrayList<>(employee.getBuildings());
 
         if (!buildingsToRedistribute.isEmpty()) {
@@ -118,15 +125,16 @@ public class EmployeeServiceImpl implements EmployeeService {
 
             if (otherEmployees.isEmpty()) {
                 throw new LogicOperationException(
-                        "Failed to remove employee. There are no other employees in the company to take over their buildings.");
-            }
+                        "Cannot delete employee. No other colleagues available to take over their buildings.");            }
 
             for (Building building : buildingsToRedistribute) {
+                // намира най-малко натоварения служител
                 Employee targetEmployee = otherEmployees.stream()
                         .min(Comparator.comparingInt(e -> e.getBuildings().size()))
                         .orElse(otherEmployees.getFirst());
 
                 building.setEmployee(targetEmployee);
+                // JPA автоматично ще обнови връзката при края на транзакцията
                 targetEmployee.getBuildings().add(building);
             }
         }

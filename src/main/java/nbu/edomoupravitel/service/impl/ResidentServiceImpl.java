@@ -104,9 +104,16 @@ public class ResidentServiceImpl implements ResidentService {
                 .collect(Collectors.toList());
     }
 
+
+    /**
+     * превключва статуса на жител от "resident" на "owner"
+     * 1. ако той вече е собственик -> правата му се отнемат (апартаментът остава без собственик)
+     * 2. ако апартаментът има друг собственик -> старият се премахва, а текущият жител става новият собственик
+     * 3. ако апартаментът няма собственик -> текущият жител става собственик
+     * също методът автоматично почиства старите записи в таблица 'owners', за да не остават "сираци" в базата
+     */
     @Override
     @Transactional
-    // логика позволяваща бързо превключване между обикновен resident и owner
     public void toggleOwner(Long residentId) {
         Resident resident = residentRepository.findById(residentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Resident not found with id: " + residentId));
@@ -127,6 +134,7 @@ public class ResidentServiceImpl implements ResidentService {
         }
 
         if (isCurrentlyOwner) {
+            // отнемане на собственост
             apartment.setOwner(null);
             apartmentRepository.save(apartment);
             ownerRepository.delete(currentOwner); // чистим базата от orphans

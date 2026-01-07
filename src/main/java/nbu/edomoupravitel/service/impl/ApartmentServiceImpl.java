@@ -131,14 +131,19 @@ public class ApartmentServiceImpl implements ApartmentService {
         return dto;
     }
 
+    /**
+     * формула: (площ * цена/кв.м) + (ползващи асансьор * такса асансьор) + (такса домашен любимец)
+     * веригата на зависимост е Apartment -> Building -> Employee -> Company
+     * ако някъде веригата е прекъсната, се използват нулеви ставки (0.00 лв)
+     */
     private double calculateFeeInternal(Apartment apartment) {
 
-        // Default values if no company associated (fallback)
+        // default-ни стойности, ако не е сключен договор с компания (fallback)
         double taxPerSqM = 0;
         double elevatorTax = 0;
         double petTax = 0;
 
-        // Fetch Company custom rates (mandatory fields)
+        // fetch-ване на custom тарифата, която е определила компанията
         if (apartment.getBuilding() != null &&
                 apartment.getBuilding().getEmployee() != null &&
                 apartment.getBuilding().getEmployee().getCompany() != null) {
