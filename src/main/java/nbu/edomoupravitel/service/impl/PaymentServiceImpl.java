@@ -3,18 +3,23 @@ package nbu.edomoupravitel.service.impl;
 import lombok.RequiredArgsConstructor;
 import nbu.edomoupravitel.dto.PaymentDto;
 import nbu.edomoupravitel.entity.Apartment;
+import nbu.edomoupravitel.entity.MonthlyFee;
 import nbu.edomoupravitel.entity.Payment;
+import nbu.edomoupravitel.exception.LogicOperationException;
 import nbu.edomoupravitel.exception.ResourceNotFoundException;
 import nbu.edomoupravitel.repository.ApartmentRepository;
+import nbu.edomoupravitel.repository.MonthlyFeeRepository;
 import nbu.edomoupravitel.repository.PaymentRepository;
 import nbu.edomoupravitel.service.PaymentService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,20 +29,47 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final ApartmentRepository apartmentRepository;
+    private final MonthlyFeeRepository monthlyFeeRepository;
 
     @Override
-    public PaymentDto payFee(Long apartmentId, BigDecimal amount) {
-        Apartment apartment = apartmentRepository.findById(apartmentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Apartment not found with id: " + apartmentId));
+    @Transactional
+    public void createPayment(PaymentDto paymentDto) {
+        Apartment apartment = apartmentRepository.findById(paymentDto.getApartmentId())
+                .orElseThrow(() -> new ResourceNotFoundException("Apartment not found"));
 
-        Payment payment = Payment.builder()
-                .amount(amount)
-                .paymentDate(LocalDate.now())
-                .apartment(apartment)
-                .build();
+        // --- НОВА ЗАЩИТА ---
+        // 1. Проверяваме дали изобщо има какво да се плаща
+        List<MonthlyFee> unpaidFees = monthlyFeeRepository.findByApartmentIdAndIsPaidFalse(apartment.getId());
 
-        Payment savedPayment = paymentRepository.save(payment);
-        return PaymentDto.fromEntity(savedPayment);
+        if (unpaidFees.isEmpty()) {
+            throw new LogicOperationException(
+                    "Всички такси за апартамент №" + apartment.getApartmentNumber()
+                            + " вече са платени! Плащането е отказано.");
+        }
+
+        // Сортираме: първо старите дългове
+        unpaidFees.sort(Comparator.comparingInt(MonthlyFee::getYear)
+                .thenComparingInt(MonthlyFee::getMonth));
+
+        // 2. Създаваме плащането само ако има дълг
+        Payment payment = new Payment();
+        payment.setApartment(apartment);
+        payment.setAmount(paymentDto.getAmount());
+        payment.setPaymentDate(LocalDate.now());
+        paymentRepository.save(payment);
+
+        // 3. Алгоритъм за покриване (същият като преди)
+        BigDecimal remainingMoney = paymentDto.getAmount();
+
+        for (MonthlyFee fee : unpaidFees) {
+            if (remainingMoney.compareTo(fee.getAmount()) >= 0) {
+                fee.setPaid(true);
+                monthlyFeeRepository.save(fee);
+                remainingMoney = remainingMoney.subtract(fee.getAmount());
+            } else {
+                break;
+            }
+        }
     }
 
     @Override

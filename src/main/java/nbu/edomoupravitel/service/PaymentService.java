@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public interface PaymentService {
-    PaymentDto payFee(Long apartmentId, BigDecimal amount);
+    void createPayment(PaymentDto paymentDto);
 
     List<PaymentDto> getAllPayments();
     // експортира всички плащания в CSV файл

@@ -27,6 +27,9 @@ public class PaymentDto {
     private Long apartmentId;
 
     // полета за справка (read-only при визуализация)
+    private Integer apartmentNumber;
+    private Integer floor;
+
     private String companyName;
     private String employeeName;
     private String buildingAddress;
@@ -48,27 +51,35 @@ public class PaymentDto {
 
         // навигира през графа от обекти, за да извлече контекстна информация за UI
         // ВАРИАНТ 1: апартаментът съществува (Live Data)
-        if (entity.getApartment() != null && entity.getApartment().getBuilding() != null) {
-            builder.buildingAddress(entity.getApartment().getBuilding().getAddress());
+        if (entity.getApartment() != null) {
+            // ТУК ПОПЪЛВАМЕ НОВИТЕ ДАННИ
+            builder.apartmentNumber(entity.getApartment().getApartmentNumber());
+            builder.floor(entity.getApartment().getFloor());
+
+            if (entity.getApartment().getBuilding() != null) {
+                builder.buildingAddress(entity.getApartment().getBuilding().getAddress());
 
             if (entity.getApartment().getBuilding().getEmployee() != null) {
+                // име на служител
                 builder.employeeName(entity.getApartment().getBuilding().getEmployee().getFirstName()
                         + " " + entity.getApartment().getBuilding().getEmployee().getLastName());
 
+                // име на компания
                 if (entity.getApartment().getBuilding().getEmployee().getCompany() != null) {
                     builder.companyName(entity.getApartment().getBuilding().getEmployee().getCompany().getName());
                 }
             }
         }
         // ВАРИАНТ 2: апартаментът е изтрит (Historical Snapshot)
-        else if (entity.getAuditDetails() != null) {
-            builder.buildingAddress(entity.getAuditDetails()); // Тук ще излезе "ARCHIVED: Apt 5..."
+        } else if (entity.getAuditDetails() != null) {
+            // ... логиката за архива ...
+            builder.buildingAddress(entity.getAuditDetails());
             builder.companyName("N/A (Deleted)");
             builder.employeeName("N/A");
         }
         // ВАРИАНТ 3: няма данни (сираче)
         else {
-            builder.buildingAddress("Unknown (Data Lost)");
+            builder.buildingAddress("Unknown");
         }
 
         return builder.build();

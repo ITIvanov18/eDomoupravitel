@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Payments History</title>
+    <title>Payments & Treasury</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="/css/style.css" rel="stylesheet">
@@ -13,9 +13,15 @@
 <div th:replace="~{header :: header}"></div>
 
 <div class="container mt-4 mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Payments History</h2>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-coins text-warning me-2"></i>Finances & Payments</h2>
         <div>
+            <button class="btn btn-outline-primary me-2" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#treasuryCollapse" aria-expanded="false">
+                <i class="fas fa-chart-line me-1"></i> Treasury Report
+            </button>
+
             <button type="button" class="btn btn-success me-2" data-bs-toggle="modal"
                     data-bs-target="#createPaymentModal">
                 <i class="fas fa-plus"></i> Record Payment
@@ -35,16 +41,118 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <div class="card shadow-sm">
+    <div class="collapse mb-4 show" id="treasuryCollapse">
+        <div class="card border-primary-subtle shadow-sm">
+            <div class="card-header bg-primary-subtle text-primary fw-bold">
+                <i class="fas fa-landmark me-2"></i>Treasury
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="p-3 bg-danger bg-opacity-10 border border-danger rounded text-center">
+                            <h6 class="text-danger mb-1">Total Unpaid (Debt)</h6>
+                            <h3 class="fw-bold text-danger"
+                                th:text="${#numbers.formatDecimal(report.totalUnpaidAmount, 1, 2)} + ' лв.'">0.00
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-success bg-opacity-10 border border-success rounded text-center">
+                            <h6 class="text-success mb-1">Total Collected (Cash)</h6>
+                            <h3 class="fw-bold text-success"
+                                th:text="${#numbers.formatDecimal(report.totalPaidAmount, 1, 2)} + ' лв.'">0.00</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <form th:action="@{/payments/generate-fees}" method="post"
+                              class="p-2 border rounded bg-light">
+                            <label class="small fw-bold text-muted mb-1">Generate Monthly Fees:</label>
+                            <div class="input-group input-group-sm">
+                                <label>
+                                    <input type="number" name="month" class="form-control" th:value="${currentMonth}"
+                                           min="1" max="12" placeholder="MM">
+                                </label>
+                                <label>
+                                    <input type="number" name="year" class="form-control" th:value="${currentYear}"
+                                           placeholder="YYYY">
+                                </label>
+                                <button type="submit" class="btn btn-primary"
+                                        onclick="return confirm('Generate fees for all apartments?')">
+                                    <i class="fas fa-cogs"></i> Run
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div th:if="${not #lists.isEmpty(report.overdueApartments)}"
+                     class="alert alert-danger border-danger shadow-sm">
+                    <h5 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Overdue Payments (Deadline exceeded)
+                    </h5>
+                    <p class="mb-2">The following apartments have missed the payment deadline (5th of the month):
+                    </p>
+
+                    <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                        <table class="table table-sm table-danger table-striped mb-0">
+                            <thead>
+                            <tr>
+                                <th>Apartment / Building</th>
+                                <th>Overdue Month</th>
+                                <th>Amount Due</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="late : ${report.overdueApartments}">
+                                <td th:text="${late.apartmentInfo}">Blok 1, Ap 2</td>
+                                <td th:text="${late.month}">01/2025</td>
+                                <td class="fw-bold" th:text="${late.amount} + ' лв.'">50.00</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div th:if="${#lists.isEmpty(report.overdueApartments)}"
+                     class="alert alert-success border-success bg-opacity-10 py-2">
+                    <i class="fas fa-check-circle me-2"></i> Great job! No overdue payments found.
+                </div>
+
+                <details>
+                    <summary class="fw-bold text-secondary cursor-pointer mb-2">View Breakdown by Company</summary>
+                    <table class="table table-sm table-bordered mt-2">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Company</th>
+                            <th class="text-end text-danger">Unpaid</th>
+                            <th class="text-end text-success">Paid</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="row : ${report.companyRows}">
+                            <td th:text="${row.companyName}">Firm</td>
+                            <td class="text-end text-danger fw-bold" th:text="${row.unpaidAmount}">0.00</td>
+                            <td class="text-end text-success fw-bold" th:text="${row.paidAmount}">0.00</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </details>
+            </div>
+        </div>
+    </div>
+
+    <h5 class="text-muted border-bottom pb-2 mb-3">Transaction History</h5>
+    <div class="card shadow-sm border-0">
         <div class="card-body p-0">
-            <table class="table table-hover table-striped mb-0">
+            <table class="table table-hover table-striped mb-0 align-middle">
                 <thead class="table-dark">
                 <tr>
                     <th>ID</th>
                     <th>Building / Address</th>
                     <th>Amount</th>
                     <th>Date</th>
-                    <th>Collected By</th>
+                    <th>Details</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -53,6 +161,15 @@
 
                     <td>
                         <div class="fw-bold" th:text="${payment.buildingAddress}">Address</div>
+                        <div class="small text-muted" th:if="${payment.apartmentNumber}">
+                            <i class="fas fa-home me-1"></i>
+                            Apt. <span th:text="${payment.apartmentNumber}"></span>,
+                            Floor <span th:text="${payment.floor}"></span>
+                        </div>
+                        <div class="small text-muted"
+                             th:if="${payment.apartmentNumber == null && payment.apartmentId != null}">
+                            Apt ID: <span th:text="${payment.apartmentId}"></span>
+                        </div>
                     </td>
 
                     <td class="fw-bold text-success"
@@ -63,16 +180,19 @@
                     <td th:text="${#temporals.format(payment.paymentDate, 'dd.MM.yyyy')}">01.01.2025</td>
 
                     <td>
-                        <div th:if="${payment.companyName}" th:text="${payment.companyName}"
-                             class="small fw-bold">Company</div>
-                        <div th:if="${payment.employeeName}" th:text="${payment.employeeName}"
-                             class="small text-muted">Employee</div>
+                        <div th:if="${payment.employeeName}" class="fw-bold text-dark">
+                            <i class="fas fa-user-tie me-1 text-secondary small"></i>
+                            <span th:text="${payment.employeeName}">Employee Name</span>
+                        </div>
+
+                        <div th:if="${payment.companyName}" class="small text-muted ms-1">
+                            <i class="far fa-building me-1"></i>
+                            <span th:text="${payment.companyName}">Company Name</span>
+                        </div>
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(payments)}">
-                    <td colspan="5" class="text-center py-4 text-muted">
-                        No payments recorded yet.
-                    </td>
+                    <td colspan="5" class="text-center py-4 text-muted">No payments recorded yet.</td>
                 </tr>
                 </tbody>
             </table>
@@ -80,8 +200,6 @@
     </div>
 </div>
 
-
-<!-- Create Payment Modal -->
 <div class="modal fade" id="createPaymentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -94,14 +212,11 @@
                     <div class="mb-3">
                         <label for="apartmentId" class="form-label">Apartment ID</label>
                         <input type="number" class="form-control" id="apartmentId" name="apartmentId" required>
-                        <div class="form-text">Enter the ID of the apartment paying the fee.</div>
                     </div>
-
                     <div class="mb-3">
                         <label for="amount" class="form-label">Amount</label>
                         <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
                     </div>
-
                     <div class="modal-footer px-0 pb-0">
                         <button type="submit" class="btn btn-success">Pay</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
