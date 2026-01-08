@@ -38,7 +38,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Apartment not found"));
 
         // --- НОВА ЗАЩИТА ---
-        // 1. Проверяваме дали изобщо има какво да се плаща
+        // проверява дали изобщо има какво да се плаща
         List<MonthlyFee> unpaidFees = monthlyFeeRepository.findByApartmentIdAndIsPaidFalse(apartment.getId());
 
         if (unpaidFees.isEmpty()) {
@@ -47,18 +47,18 @@ public class PaymentServiceImpl implements PaymentService {
                             + " вече са платени! Плащането е отказано.");
         }
 
-        // Сортираме: първо старите дългове
+        // сортира: първо старите дългове
         unpaidFees.sort(Comparator.comparingInt(MonthlyFee::getYear)
                 .thenComparingInt(MonthlyFee::getMonth));
 
-        // 2. Създаваме плащането само ако има дълг
+        // създава плащането само ако е дължимо
         Payment payment = new Payment();
         payment.setApartment(apartment);
         payment.setAmount(paymentDto.getAmount());
         payment.setPaymentDate(LocalDate.now());
         paymentRepository.save(payment);
 
-        // 3. Алгоритъм за покриване (същият като преди)
+        // алгоритъм за покриване
         BigDecimal remainingMoney = paymentDto.getAmount();
 
         for (MonthlyFee fee : unpaidFees) {
@@ -83,7 +83,6 @@ public class PaymentServiceImpl implements PaymentService {
     public void exportPaidFeesToFile(String filePath) {
         List<Payment> payments = paymentRepository.findAll();
         StringBuilder sb = new StringBuilder();
-        // CSV Header
         sb.append("Company, Employee, Building, Apartment, Amount, Date\n");
 
         for (Payment payment : payments) {

@@ -11,30 +11,28 @@ import java.util.List;
 @Repository
 public interface MonthlyFeeRepository extends JpaRepository<MonthlyFee, Long> {
 
-        // Проверка дали вече сме начислили такси за този месец (за да не дублираме
-        // бутона)
+        // проверка дали вече са начислени такси за този месец
         boolean existsByMonthAndYear(int month, int year);
 
-        // --- СПРАВКИ ЗА ДЪЛЖИМИ СУМИ (UNPAID) ---
-
-        // 1. Дължимо по Компания
+        // СПРАВКИ ЗА ДЪЛЖИМИ СУМИ
+        // дължимо по компания
         @Query("SELECT SUM(mf.amount) FROM MonthlyFee mf " +
                         "WHERE mf.isPaid = false " +
                         "AND mf.apartment.building.employee.company.id = :companyId")
         BigDecimal sumUnpaidByCompany(Long companyId);
 
-        // 2. Дължимо по Служител
+        // 2. дължимо по служител
         @Query("SELECT SUM(mf.amount) FROM MonthlyFee mf " +
                         "WHERE mf.isPaid = false " +
                         "AND mf.apartment.building.employee.id = :employeeId")
         BigDecimal sumUnpaidByEmployee(Long employeeId);
 
-        // 3. Дължимо по Сграда
+        // дължимо по сграда
         @Query("SELECT SUM(mf.amount) FROM MonthlyFee mf " +
                         "WHERE mf.isPaid = false " +
                         "AND mf.apartment.building.id = :buildingId")
         BigDecimal sumUnpaidByBuilding(Long buildingId);
 
-        // Списък с неплатени такси за конкретен апартамент (за да можем да ги платим)
+        // списък с неплатени такси за конкретен апартамент (за да можем да ги платим)
         List<MonthlyFee> findByApartmentIdAndIsPaidFalse(Long apartmentId);
 }

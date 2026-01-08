@@ -15,7 +15,7 @@ public class FeeScheduler {
 
     private final TreasuryService treasuryService;
 
-    // Cron израз: "0 0 0 1 * ?" означава "В 00:00 часа на 1-во число всеки месец"
+    // 0 0 0 1 * ? означава "в 00:00 часа на 1-во число всеки месец"
     @Scheduled(cron = "0 0 0 1 * ?")
     public void autoGenerateFees() {
         LocalDate today = LocalDate.now();
@@ -27,7 +27,7 @@ public class FeeScheduler {
         try {
             treasuryService.generateMonthlyFees(month, year);
         } catch (Exception e) {
-            // Вече са генерирани или друга грешка - просто логваме
+            // вече са генерирани или друга грешка
             System.out.println("⚠️ Auto-generation skipped: " + e.getMessage());
         }
     }

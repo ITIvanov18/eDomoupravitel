@@ -14,20 +14,20 @@ import java.util.List;
 @AllArgsConstructor
 public class TreasuryReportDto {
 
-    // Глобални суми (Общо за цялата система)
-    private BigDecimal totalUnpaidAmount; // Общо дължимо (всички фирми)
-    private BigDecimal totalPaidAmount; // Общо събрано (всички фирми)
+    // глобални суми
+    private BigDecimal totalUnpaidAmount; // общо дължимо (всички фирми)
+    private BigDecimal totalPaidAmount; // общо събрано (всички фирми)
 
-    // Списък с редове за таблицата (по фирми)
+    // списък с редове за таблицата (по фирми)
     private List<CompanyReportRow> companyRows;
 
-    private List<OverdueInfo> overdueApartments; // <--- НОВО ПОЛЕ
+    private List<OverdueInfo> overdueApartments;
 
     @Data
     @AllArgsConstructor
     public static class OverdueInfo {
-        private String apartmentInfo; // напр. "Блок 1, Ап. 5"
-        private String month; // напр. "Януари 2025"
+        private String apartmentInfo;
+        private String month;
         private BigDecimal amount;
     }
 

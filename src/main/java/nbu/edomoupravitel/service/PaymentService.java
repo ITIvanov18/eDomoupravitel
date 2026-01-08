@@ -2,7 +2,6 @@ package nbu.edomoupravitel.service;
 
 import nbu.edomoupravitel.dto.PaymentDto;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public interface PaymentService {

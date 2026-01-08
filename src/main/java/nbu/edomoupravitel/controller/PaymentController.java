@@ -24,10 +24,10 @@ public class PaymentController {
 
     @GetMapping
     public String listPayments(Model model) {
-        // 1. стандартен списък с плащания
+        // стандартен списък с плащания
         model.addAttribute("payments", paymentService.getAllPayments());
 
-        // 2. данните за хазната
+        // данните за хазната
         model.addAttribute("report", treasuryService.getTreasuryReport());
         model.addAttribute("currentMonth", LocalDate.now().getMonthValue());
         model.addAttribute("currentYear", LocalDate.now().getYear());
@@ -70,7 +70,7 @@ public class PaymentController {
     @GetMapping("/export")
     public String exportPayments(RedirectAttributes redirectAttributes) {
         try {
-            // Exports to project root or specified path
+            // експортва файла в папката на проекта
             String fileName = "paid_fees.csv";
             paymentService.exportPaidFeesToFile(fileName);
             redirectAttributes.addFlashAttribute("message", "Successfully exported fees to " + fileName);

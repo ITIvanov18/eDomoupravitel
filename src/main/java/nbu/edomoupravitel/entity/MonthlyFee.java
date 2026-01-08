@@ -12,7 +12,8 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "monthly_fees", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"apartment_id", "month", "year"}) // Защита: Да няма 2 такси за 1 месец
+        // защита да няма 2 такси за 1 месец
+        @UniqueConstraint(columnNames = {"apartment_id", "month", "year"})
 })
 public class MonthlyFee {
 
@@ -31,7 +32,7 @@ public class MonthlyFee {
     private int year;
 
     @Column(nullable = false)
-    private BigDecimal amount; // Сумата, която е била актуална към момента на начисляване
+    private BigDecimal amount; // сумата, която е била актуална към момента на начисляване
 
     @Column(nullable = false)
     private boolean isPaid;

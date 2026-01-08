@@ -59,33 +59,15 @@ public class TreasuryServiceImpl implements TreasuryService {
 
         List<TreasuryReportDto.CompanyReportRow> rows = new ArrayList<>();
 
-        // 1. Итерираме през компаниите, за да сметнем техните баланси
+        // итерира през компаниите, за да сметне техните баланси
         List<CompanyDto> companies = companyService.getAllCompanies();
 
         for (CompanyDto company : companies) {
-            // Unpaid sum via repository query
+            // общо задължения през repository query
             BigDecimal unpaid = monthlyFeeRepository.sumUnpaidByCompany(company.getId());
             if (unpaid == null)
                 unpaid = BigDecimal.ZERO;
 
-            // Paid sum via repository query (трябва да добавим този метод в
-            // MonthlyFeeRepository или да го сметнем тук)
-            // Тъй като нямаме директен paid метод в MonthlyFeeRepository все още, нека
-            // добавим проста логика:
-            // Всъщност, по-добре да го извлечем. Засега ще ползваме stream филтър ако няма
-            // Query.
-            // Но за по-лесно: нека допуснем, че имаме платените = (Total - Unpaid)? Не
-            // съвсем.
-            // Нека ползваме native query или stream подход върху всички такси на
-            // компанията.
-            // За оптимизация, ще добавим sumPaidByCompany в репото по-късно.
-            // Сега ще ползваме stream approach (по-бавен, но работи):
-
-            // Временна логика (може да се оптимизира):
-            // Взимаме всички такси за компанията? Това е тежко.
-            // Нека просто оставим 0.00 или направим нова заявка в репото...
-            // За да не пипаме репото сега, ще оставим 0 или ще ползваме съществуващото.
-            // В User Request-а имаше заявка само за Unpaid. Нека добавим simple method
             BigDecimal paid = monthlyFeeRepository.findAll().stream()
                     .filter(mf -> mf.getApartment().getBuilding().getEmployee().getCompany().getId()
                             .equals(company.getId()))
@@ -99,37 +81,23 @@ public class TreasuryServiceImpl implements TreasuryService {
             rows.add(new TreasuryReportDto.CompanyReportRow(company.getName(), unpaid, paid));
         }
 
-        // --- НОВА ЛОГИКА ЗА ЗАКЪСНЕНИЯ ---
+        // логика са просрочено плащане
         List<TreasuryReportDto.OverdueInfo> overdueList = new ArrayList<>();
         LocalDate today = LocalDate.now();
-        int deadlineDay = 5; // Срок за плащане
+        int deadlineDay = 5; // срок за плащане (5-то число)
 
-        // Взимаме всички неплатени такси от базата
+        // взима всички неплатени такси от базата
         List<MonthlyFee> allUnpaid = monthlyFeeRepository.findAll().stream()
                 .filter(fee -> !fee.isPaid())
                 .toList();
 
         for (MonthlyFee fee : allUnpaid) {
-            boolean isLate = false;
-
-            // Ако е от минала година -> ЗАКЪСНЯЛ
-            if (fee.getYear() < today.getYear()) {
-                isLate = true;
-            }
-            // Ако е от тази година, но минал месец -> ЗАКЪСНЯЛ
-            else if (fee.getYear() == today.getYear() && fee.getMonth() < today.getMonthValue()) {
-                isLate = true;
-            }
-            // Ако е от текущия месец, но е минало 5-то число -> ЗАКЪСНЯЛ
-            else if (fee.getYear() == today.getYear() && fee.getMonth() == today.getMonthValue()
-                    && today.getDayOfMonth() > deadlineDay) {
-                isLate = true;
-            }
+            boolean isLate = isLate(fee, today, deadlineDay);
 
             if (isLate) {
                 String aptInfo = "Ap. " + fee.getApartment().getApartmentNumber() +
                         " (Floor " + fee.getApartment().getFloor() + ")";
-                // Добавяме и адреса на сградата за яснота
+                // добавя се и адреса на сградата за яснота
                 if (fee.getApartment().getBuilding() != null) {
                     aptInfo = fee.getApartment().getBuilding().getAddress() + ", " + aptInfo;
                 }
@@ -145,7 +113,26 @@ public class TreasuryServiceImpl implements TreasuryService {
                 .totalUnpaidAmount(globalUnpaid)
                 .totalPaidAmount(globalPaid)
                 .companyRows(rows)
-                .overdueApartments(overdueList) // <--- ПЪХАМЕ ГИ ТУК
+                .overdueApartments(overdueList)
                 .build();
+    }
+
+    private static boolean isLate(MonthlyFee fee, LocalDate today, int deadlineDay) {
+        boolean isLate = false;
+
+        // ако е от минала година -> ЗАКЪСНЯЛ
+        if (fee.getYear() < today.getYear()) {
+            isLate = true;
+        }
+        // ако е от тази година, но минал месец -> ЗАКЪСНЯЛ
+        else if (fee.getYear() == today.getYear() && fee.getMonth() < today.getMonthValue()) {
+            isLate = true;
+        }
+        // ако е от текущия месец, но е минало 5-то число -> ЗАКЪСНЯЛ
+        else if (fee.getYear() == today.getYear() && fee.getMonth() == today.getMonthValue()
+                && today.getDayOfMonth() > deadlineDay) {
+            isLate = true;
+        }
+        return isLate;
     }
 }
