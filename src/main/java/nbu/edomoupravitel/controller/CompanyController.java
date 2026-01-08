@@ -21,8 +21,9 @@ public class CompanyController {
     private final CompanyService companyService;
 
     @GetMapping
-    public String listCompanies(Model model) {
-        model.addAttribute("companies", companyService.getAllCompanies());
+    public String listCompanies(@RequestParam(required = false) String sort, Model model) {
+        model.addAttribute("companies", companyService.getAllCompanies(sort));
+        model.addAttribute("currentSort", sort);
         model.addAttribute("newCompany", new CompanyDto());
         return "companies/list";
     }
@@ -64,7 +65,7 @@ public class CompanyController {
         return "redirect:/companies";
     }
 
-    // --- API Endpoints for Modal ---
+    // API endpoints за модала
 
     @GetMapping("/{id}/data")
     @ResponseBody

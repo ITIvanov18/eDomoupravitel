@@ -11,6 +11,12 @@ import java.util.List;
 @Repository
 public interface MonthlyFeeRepository extends JpaRepository<MonthlyFee, Long> {
 
+        // сумиране на ПЛАТЕНИ такси по компания
+        @Query("SELECT SUM(mf.amount) FROM MonthlyFee mf " +
+            "WHERE mf.isPaid = true " +
+            "AND mf.apartment.building.employee.company.id = :companyId")
+        BigDecimal sumPaidByCompany(Long companyId);
+
         // проверка дали вече са начислени такси за този месец
         boolean existsByMonthAndYear(int month, int year);
 
@@ -21,7 +27,7 @@ public interface MonthlyFeeRepository extends JpaRepository<MonthlyFee, Long> {
                         "AND mf.apartment.building.employee.company.id = :companyId")
         BigDecimal sumUnpaidByCompany(Long companyId);
 
-        // 2. дължимо по служител
+        // дължимо по служител
         @Query("SELECT SUM(mf.amount) FROM MonthlyFee mf " +
                         "WHERE mf.isPaid = false " +
                         "AND mf.apartment.building.employee.id = :employeeId")

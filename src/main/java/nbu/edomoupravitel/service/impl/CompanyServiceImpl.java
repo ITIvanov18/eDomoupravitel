@@ -7,11 +7,14 @@ import nbu.edomoupravitel.entity.Employee;
 import nbu.edomoupravitel.exception.ResourceNotFoundException;
 import nbu.edomoupravitel.repository.CompanyRepository;
 import nbu.edomoupravitel.repository.EmployeeRepository;
+import nbu.edomoupravitel.repository.MonthlyFeeRepository;
 import nbu.edomoupravitel.service.CompanyService;
 import nbu.edomoupravitel.service.EmployeeService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -19,6 +22,7 @@ import java.util.List;
 // автоматично създава конструктор за final полетата (dependency injection)
 public class CompanyServiceImpl implements CompanyService {
 
+    private final MonthlyFeeRepository monthlyFeeRepository;
     private final CompanyRepository companyRepository;
     private final EmployeeRepository employeeRepository;
     private final EmployeeService employeeService;
@@ -51,9 +55,37 @@ public class CompanyServiceImpl implements CompanyService {
         return CompanyDto.fromEntity(company);
     }
 
+    public List<CompanyDto> getAllCompanies(String sort) {
+        // взима базовия списък
+        List<CompanyDto> companies = companyRepository.findAllWithBuildingCount();
+        // обикаля и попълва прихода за всяка компания
+        for (CompanyDto company : companies) {
+            BigDecimal revenue = monthlyFeeRepository.sumPaidByCompany(company.getId());
+            company.setTotalRevenue(revenue != null ? revenue : BigDecimal.ZERO);
+        }
+        // сортира
+        if (sort != null) {
+            switch (sort) {
+                case "name_asc":
+                    companies.sort(Comparator.comparing(CompanyDto::getName));
+                    break;
+                case "name_desc":
+                    companies.sort(Comparator.comparing(CompanyDto::getName).reversed());
+                    break;
+                case "revenue_desc": // най-богатите най-горе
+                    companies.sort(Comparator.comparing(CompanyDto::getTotalRevenue).reversed());
+                    break;
+                case "revenue_asc":
+                    companies.sort(Comparator.comparing(CompanyDto::getTotalRevenue));
+                    break;
+            }
+        }
+        return companies;
+    }
+
     @Override
     public List<CompanyDto> getAllCompanies() {
-        return companyRepository.findAllWithBuildingCount();
+        return getAllCompanies(null);
     }
 
     @Override

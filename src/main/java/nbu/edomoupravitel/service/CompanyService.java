@@ -14,6 +14,7 @@ public interface CompanyService {
 
     CompanyDto getCompany(Long id);
 
+    List<CompanyDto> getAllCompanies(String sort);
     List<CompanyDto> getAllCompanies();
 
     void assignEmployee(Long companyId, Long employeeId);

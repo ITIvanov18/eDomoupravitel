@@ -1,5 +1,7 @@
 package nbu.edomoupravitel.dto;
 
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotBlank;
@@ -15,6 +17,8 @@ import nbu.edomoupravitel.entity.Company;
 @AllArgsConstructor
 public class CompanyDto {
     private Long id;
+
+    private BigDecimal totalRevenue;
 
     @NotBlank(message = "Company name is required")
     private String name;
@@ -33,14 +37,15 @@ public class CompanyDto {
     @Min(value = 0, message = "Tax must be positive")
     private Double petTax;
 
-    // Manual constructor for JPQL query CompanyDto(c.id, c.name, COUNT(b))
-    public CompanyDto(Long id, String name, Long buildingCount) {
+    // manual constructor за JPQL query (c.id, c.name, COUNT(b), c.taxPerSqM, c.elevatorTax, c.petTax)
+    public CompanyDto(Long id, String name, Long buildingCount, Double taxPerSqM, Double elevatorTax, Double petTax) {
         this.id = id;
         this.name = name;
         this.buildingCount = (buildingCount != null) ? buildingCount : 0L;
-        this.taxPerSqM = 0.0;
-        this.elevatorTax = 0.0;
-        this.petTax = 0.0;
+        this.taxPerSqM = (taxPerSqM != null) ? taxPerSqM : 0.0;
+        this.elevatorTax = (elevatorTax != null) ? elevatorTax : 0.0;
+        this.petTax = (petTax != null) ? petTax : 0.0;
+        this.totalRevenue = BigDecimal.ZERO; // инициализира се, за да не е null
     }
 
     // помощен метод за превръщане от DTO в Entity (за запис в базата)
