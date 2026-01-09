@@ -13,243 +13,358 @@
 <div th:replace="~{header :: header}"></div>
 
 <div class="container mt-4 mb-5">
-    <h2>Apartments</h2>
 
-    <div class="mb-3">
-        <button type="button" class="btn btn-primary btn-custom-create" data-bs-toggle="modal"
-                data-bs-target="#createApartmentModal">
-            Create New Apartment
-        </button>
-        <span class="ms-3" th:if="${param.buildingId}">Filtered by Building ID: <span
-                th:text="${param.buildingId}"></span></span>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark"><i class="fas fa-door-open text-primary me-2"></i>Apartments</h2>
+            <p class="text-muted small mb-0">Manage units, residents, and fees</p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <div th:if="${param.buildingId}"
+                 class="d-flex align-items-center bg-white border px-3 rounded shadow-sm">
+                <span class="small text-muted me-2">Filtered by Building:</span>
+                <span class="fw-bold text-primary" th:text="${param.buildingId}">ID</span>
+                <a href="/apartments" class="ms-2 text-danger"><i class="fas fa-times"></i></a>
+            </div>
+
+            <button type="button" class="btn btn-primary text-white shadow-sm"
+                    style="background-color: var(--primary-color); border-color: var(--primary-color);"
+                    data-bs-toggle="modal" data-bs-target="#createApartmentModal">
+                <i class="fas fa-plus-circle me-2"></i>New Apartment
+            </button>
+        </div>
     </div>
 
-    <table class="table table-striped align-middle">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Building</th>
-            <th>Apt #</th>
-            <th>Floor</th>
-            <th>Owner</th>
-            <th>Residents (Count)</th>
-            <th>Monthly Fee</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="apt : ${apartments}">
-            <td th:text="${apt.id}">1</td>
-            <td th:text="${apt.buildingAddress}">Addr</td>
-            <td th:text="${apt.apartmentNumber}">101</td>
-            <td th:text="${apt.floor}">1</td>
-            <td th:text="${apt.ownerName}">Owner</td>
-            <td th:text="${#lists.size(apt.residents)}">3</td>
-            <td th:text="${#numbers.formatDecimal(apt.calculatedFee, 1, 2)} + ' BGN'">0.00</td>
-            <td>
-                <div class="d-flex gap-1">
-                    <!-- Details/Manage Button Triggering Modal -->
-                    <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
-                            th:data-bs-target="'#apartmentModal' + ${apt.id}">
-                        Details / Manage
-                    </button>
-
-                    <!-- Pay Button -->
-                    <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#payModal" th:data-apartment-id="${apt.id}"
-                            th:data-amount="${apt.calculatedFee}">
-                        Pay
-                    </button>
-
-                    <!-- Delete Button -->
-                    <form th:action="@{/apartments/{id}(id=${apt.id})}" th:method="delete"
-                          style="display:inline;" onsubmit="return confirm('Are you sure?');">
-                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                </div>
-
-                <!-- Modal Nested Inside Action Column -->
-                <div class="modal fade" th:id="'apartmentModal' + ${apt.id}" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-lg text-start">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Apartment <span th:text="${apt.apartmentNumber}"></span>
-                                    Details</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th class="ps-4">Apartment Details</th>
+                    <th>Dimensions</th>
+                    <th>Owner</th>
+                    <th>Residents</th>
+                    <th>Monthly Fee</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="apt : ${apartments}">
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3"
+                                 style="width: 45px; height: 45px;">
+                                <span class="fw-bold" th:text="${apt.apartmentNumber}">12</span>
                             </div>
-                            <div class="modal-body">
-                                <!-- Section A: Info -->
-                                <h6>Apartment Info</h6>
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <strong>Area:</strong> <span th:text="${apt.area}"></span> m<sup>2</sup>
+                            <div>
+                                <div class="fw-bold text-dark">
+                                    Apt. <span th:text="${apt.apartmentNumber}"></span>
+                                </div>
+                                <div class="small text-muted">
+                                    <i class="fas fa-map-marker-alt me-1 text-secondary"></i>
+                                    <span th:text="${apt.buildingAddress}">Address</span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="d-flex flex-column small">
+                                    <span class="text-muted mb-1"><i class="fas fa-layer-group me-1"></i> Floor <strong
+                                            th:text="${apt.floor}">1</strong></span>
+                            <span class="text-muted"><i class="fas fa-ruler-combined me-1"></i> <strong
+                                    th:text="${apt.area}">50</strong> m²</span>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div th:if="${apt.ownerName != 'No Owner'}" class="d-flex align-items-center text-dark">
+                            <i class="fas fa-user-check text-success me-2"></i>
+                            <span th:text="${apt.ownerName}">Name</span>
+                        </div>
+                        <span th:if="${apt.ownerName == 'No Owner'}"
+                              class="badge bg-light text-muted border fw-normal">
+                                    No Owner
+                                </span>
+                    </td>
+
+                    <td>
+                        <div class="d-flex align-items-center">
+                                    <span
+                                            class="badge rounded-pill bg-info bg-opacity-10 text-info border border-info me-2 px-3 py-2">
+                                        <i class="fas fa-users me-2"></i>
+                                        <span class="fs-6" th:text="${#lists.size(apt.residents)}">0</span>
+                                    </span>
+                            <i th:if="${apt.hasPet}" class="fas fa-paw text-warning fs-4" title="Has Pet"></i>
+                        </div>
+                    </td>
+
+                    <td>
+                                <span class="fw-bold text-success fs-6">
+                                    <span th:text="${#numbers.formatDecimal(apt.calculatedFee, 1, 2)}">0.00</span> BGN
+                                </span>
+                    </td>
+
+                    <td class="text-end pe-4">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-light btn-md text-primary border hover-shadow"
+                                    data-bs-toggle="modal" th:data-bs-target="'#apartmentModal' + ${apt.id}"
+                                    title="Manage Residents">
+                                <i class="fas fa-users-cog"></i>
+                            </button>
+
+                            <button type="button" class="btn btn-light btn-md text-success border hover-shadow"
+                                    data-bs-toggle="modal" data-bs-target="#payModal"
+                                    th:data-apartment-id="${apt.id}" th:data-amount="${apt.calculatedFee}"
+                                    title="Record Payment">
+                                <i class="fas fa-credit-card"></i>
+                            </button>
+
+                            <form th:action="@{/apartments/{id}(id=${apt.id})}" th:method="delete"
+                                  style="display:inline;"
+                                  onsubmit="return confirm('Are you sure? All residents and history will be deleted.');">
+                                <button type="submit"
+                                        class="btn btn-light btn-md text-danger border hover-shadow ms-1"
+                                        title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="modal fade" th:id="'apartmentModal' + ${apt.id}" tabindex="-1"
+                             aria-hidden="true">
+                            <div class="modal-dialog modal-lg text-start">
+                                <div class="modal-content border-0 shadow-lg">
+                                    <div class="modal-header bg-light border-bottom-0 pb-0">
+                                        <h5 class="modal-title fw-bold text-primary">
+                                            <i class="fas fa-home me-2"></i>Apartment <span
+                                                th:text="${apt.apartmentNumber}"></span>
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
                                     </div>
-                                    <div class="col-md-6">
-                                        <strong>Has Pet:</strong> <span
-                                            th:text="${apt.hasPet} ? 'Yes' : 'No'"></span>
+                                    <div class="modal-body pt-4">
+                                        <div class="d-flex gap-3 mb-4">
+                                                    <span class="badge bg-white border text-secondary p-2">
+                                                        <i class="fas fa-ruler me-1"></i> <span
+                                                            th:text="${apt.area}"></span> m²
+                                                    </span>
+                                            <span class="badge bg-white border text-secondary p-2">
+                                                        <i class="fas fa-layer-group me-1"></i> Floor <span
+                                                    th:text="${apt.floor}"></span>
+                                                    </span>
+                                            <span th:if="${apt.hasPet}"
+                                                  class="badge bg-warning text-dark p-2 border border-warning">
+                                                        <i class="fas fa-paw me-1"></i> Has Pet
+                                                    </span>
+                                        </div>
+
+                                        <h6
+                                                class="border-bottom pb-2 mb-3 text-muted text-uppercase small fw-bold">
+                                            Residents List</h6>
+
+                                        <table class="table table-sm align-middle">
+                                            <thead class="table-light">
+                                            <tr>
+                                                <th class="border-0 text-muted small">Name</th>
+                                                <th class="border-0 text-muted small">Age</th>
+                                                <th class="border-0 text-muted small">Elevator</th>
+                                                <th class="border-0 text-muted small">Role</th>
+                                                <th class="border-0 text-muted small text-end">Actions</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr th:each="res : ${apt.residents}">
+                                                <td class="fw-bold text-dark"
+                                                    th:text="${res.firstName} + ' ' + ${res.lastName}">Name
+                                                </td>
+                                                <td th:text="${res.age}">Age</td>
+                                                <td>
+                                                    <i th:if="${res.usesElevator}"
+                                                       class="fas fa-check text-success small"></i>
+                                                    <span th:unless="${res.usesElevator}"
+                                                          class="text-muted small">-</span>
+                                                </td>
+                                                <td>
+                                                                <span th:if="${res.isOwner}"
+                                                                      class="badge bg-warning text-dark border border-warning">
+                                                                    <i class="fas fa-crown me-1"></i> Owner
+                                                                </span>
+                                                    <span th:unless="${res.isOwner}"
+                                                          class="badge bg-light text-secondary border">Resident</span>
+                                                </td>
+                                                <td class="text-end">
+                                                    <div class="btn-group">
+                                                        <form
+                                                                th:action="@{/residents/{id}/toggle-owner(id=${res.id})}"
+                                                                method="post">
+                                                            <button th:if="${res.isOwner}" type="submit"
+                                                                    class="btn btn-link btn-sm text-muted p-0 me-2"
+                                                                    title="Revoke Ownership">
+                                                                <i class="fas fa-user-times"></i>
+                                                            </button>
+                                                            <button th:unless="${res.isOwner}" type="submit"
+                                                                    class="btn btn-link btn-sm text-warning p-0 me-2"
+                                                                    title="Make Owner">
+                                                                <i class="fas fa-crown"></i>
+                                                            </button>
+                                                        </form>
+                                                        <form th:action="@{/residents/{id}(id=${res.id})}"
+                                                              th:method="delete"
+                                                              onsubmit="return confirm('Remove resident?');">
+                                                            <button type="submit"
+                                                                    class="btn btn-link btn-sm text-danger p-0">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr th:if="${#lists.isEmpty(apt.residents)}">
+                                                <td colspan="5" class="text-center text-muted small py-3">No
+                                                    residents added yet.</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+
+                                        <div class="bg-light p-3 rounded-3 mt-4 border border-secondary-subtle">
+                                            <h6 class="text-primary small fw-bold mb-3"><i
+                                                    class="fas fa-user-plus me-2"></i>ADD NEW RESIDENT</h6>
+                                            <form th:action="@{/residents/create}" method="post">
+                                                <input type="hidden" name="apartmentId" th:value="${apt.id}" />
+
+                                                <div class="row g-2">
+                                                    <div class="col-md-4">
+                                                        <input type="text" class="form-control form-control-sm"
+                                                               name="firstName" placeholder="First Name" required>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <input type="text" class="form-control form-control-sm"
+                                                               name="lastName" placeholder="Last Name" required>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <input type="number"
+                                                               class="form-control form-control-sm" name="age"
+                                                               placeholder="Age" min="0" required>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <button type="submit"
+                                                                class="btn btn-primary btn-sm w-100 fw-bold">Add</button>
+                                                    </div>
+                                                </div>
+                                                <div class="form-check mt-2">
+                                                    <input class="form-check-input" type="checkbox"
+                                                           name="usesElevator" id="usesElevator">
+                                                    <label class="form-check-label small text-muted"
+                                                           for="usesElevator">Uses Elevator?</label>
+                                                </div>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
-
-                                <hr>
-
-                                <!-- Section B: Residents Table -->
-                                <h6>Residents</h6>
-                                <table class="table table-sm table-bordered">
-                                    <thead class="table-light">
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Age</th>
-                                        <th>Elevator</th>
-                                        <th>Role</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr th:each="res : ${apt.residents}">
-                                        <td th:text="${res.firstName} + ' ' + ${res.lastName}">Name</td>
-                                        <td th:text="${res.age}">Age</td>
-                                        <td th:text="${res.usesElevator} ? 'Yes' : 'No'">No</td>
-                                        <td>
-                                                        <span th:if="${res.isOwner}"
-                                                              class="badge bg-warning text-dark">
-                                                            <i class="fas fa-crown"></i> Owner
-                                                        </span>
-                                            <span th:unless="${res.isOwner}"
-                                                  class="badge bg-secondary">Resident</span>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex gap-2">
-                                                <!-- Toggle Owner Form -->
-                                                <form
-                                                        th:action="@{/residents/{id}/toggle-owner(id=${res.id})}"
-                                                        method="post">
-                                                    <button th:if="${res.isOwner}" type="submit"
-                                                            class="btn btn-outline-danger btn-sm"
-                                                            title="Revoke Ownership">
-                                                        Revoke
-                                                    </button>
-                                                    <button th:unless="${res.isOwner}" type="submit"
-                                                            class="btn btn-outline-warning btn-sm"
-                                                            title="Make Owner">
-                                                        Make Owner
-                                                    </button>
-                                                </form>
-
-                                                <!-- Delete Resident Form -->
-                                                <form th:action="@{/residents/{id}(id=${res.id})}"
-                                                      th:method="delete"
-                                                      onsubmit="return confirm('Remove this resident?');">
-                                                    <button type="submit" class="btn btn-danger btn-sm">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr th:if="${#lists.isEmpty(apt.residents)}">
-                                        <td colspan="5" class="text-center text-muted">No residents found.
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-
-                                <hr>
-
-                                <!-- Section C: Add Resident Form -->
-                                <h6>Add New Resident</h6>
-                                <form th:action="@{/residents/create}" method="post"
-                                      class="p-3 bg-light rounded border">
-                                    <input type="hidden" name="apartmentId" th:value="${apt.id}" />
-
-                                    <div class="row g-3">
-                                        <div class="col-md-3">
-                                            <label class="form-label small">First Name</label>
-                                            <label>
-                                                <input type="text" class="form-control form-control-sm"
-                                                       name="firstName" required>
-                                            </label>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label small">Last Name</label>
-                                            <label>
-                                                <input type="text" class="form-control form-control-sm"
-                                                       name="lastName" required>
-                                            </label>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <label class="form-label small">Age</label>
-                                            <label>
-                                                <input type="number" class="form-control form-control-sm"
-                                                       name="age" min="0" required>
-                                            </label>
-                                        </div>
-                                        <div class="col-md-2 d-flex align-items-end">
-                                            <div class="form-check mb-1">
-                                                <input class="form-check-input" type="checkbox"
-                                                       name="usesElevator" id="usesElevator">
-                                                <label class="form-check-label small"
-                                                       for="usesElevator">Elevator?</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-2 text-end">
-                                        <button type="submit" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-plus"></i> Add Resident
-                                        </button>
-                                    </div>
-                                </form>
-                            </div> <!-- End Modal Body -->
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-    <div th:if="${#lists.isEmpty(apartments)}" class="alert alert-info mt-3">
-        No apartments registered yet.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(apartments)}" class="text-center py-5">
+        <div class="text-muted mb-3"><i class="fas fa-door-open fa-3x opacity-25"></i></div>
+        <h5 class="text-muted">No apartments found</h5>
+        <p class="text-muted small">Select "Create New Apartment" to get started.</p>
     </div>
 </div>
 
-<!-- Create Apartment Modal -->
 <div class="modal fade" id="createApartmentModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Create Apartment</h5>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0" style="background-color: var(--bg-body);">
+                <h5 class="modal-title fw-bold" style="color: var(--primary-color);">
+                    <i class="fas fa-plus-circle me-2"></i>New Apartment
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body pt-4">
                 <form th:action="@{/apartments/create}" method="post">
-                    <div class="mb-3">
-                        <label for="apartmentNumber" class="form-label">Apartment Number</label>
-                        <input type="text" class="form-control" id="apartmentNumber" name="apartmentNumber"
-                               required>
+
+                    <div class="mb-4">
+                        <label for="buildingId" class="form-label text-muted small text-uppercase"
+                               style="font-weight: 500;">Building</label>
+                        <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"
+                                      style="color: var(--text-secondary);"><i class="fas fa-city"></i></span>
+                            <select class="form-select border-start-0 ps-0" id="buildingId" name="buildingId"
+                                    required>
+                                <option value="" selected disabled>Select Building...</option>
+                                <option th:each="building : ${buildings}" th:value="${building.id}"
+                                        th:text="${building.address}"></option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="floor" class="form-label">Floor</label>
-                        <input type="number" class="form-control" id="floor" name="floor" required>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="apartmentNumber" class="form-label text-muted small"
+                                   style="font-weight: 500;">Apt. No.</label>
+                            <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i
+                                            class="fas fa-door-closed"></i></span>
+                                <input type="number" class="form-control fw-bold" id="apartmentNumber"
+                                       name="apartmentNumber" placeholder="12" min="1" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="floor" class="form-label text-muted small"
+                                   style="font-weight: 500;">Floor</label>
+                            <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i
+                                            class="fas fa-layer-group"></i></span>
+                                <input type="number" class="form-control" id="floor" name="floor" placeholder="3"
+                                       min="1" required>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="area" class="form-label">Area</label>
-                        <input type="number" step="0.01" class="form-control" id="area" name="area" min="0">
+
+                    <div class="mb-4">
+                        <label for="area" class="form-label text-muted small" style="font-weight: 500;">Total
+                            Area</label>
+                        <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-muted"><i
+                                        class="fas fa-ruler-combined"></i></span>
+                            <input type="number" step="0.01" class="form-control border-start-0 ps-0" id="area"
+                                   name="area" min="0" placeholder="0.00">
+                            <span class="input-group-text bg-light text-muted small">m²</span>
+                        </div>
                     </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="hasPet" name="hasPet">
-                        <label class="form-check-label" for="hasPet">Has Pet?</label>
+
+                    <div class="p-3 rounded-3 d-flex justify-content-between align-items-center mb-4 border"
+                         style="background-color: var(--bg-body);">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-white p-2 rounded-circle shadow-sm me-3 text-warning">
+                                <i class="fas fa-paw"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold" style="color: var(--text-primary);">Has Pet?</h6>
+                                <small style="color: var(--text-secondary);">Apply extra fees</small>
+                            </div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="hasPet" name="hasPet"
+                                   style="width: 3em; height: 1.5em; cursor: pointer;">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="buildingId" class="form-label">Building</label>
-                        <select class="form-control" id="buildingId" name="buildingId" required>
-                            <option value="">Select Building</option>
-                            <option th:each="building : ${buildings}" th:value="${building.id}"
-                                    th:text="${building.address}"></option>
-                        </select>
-                    </div>
-                    <div class="modal-footer px-0 pb-0">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Create</button>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn text-white py-2 fw-bold shadow-sm"
+                                style="background-color: var(--primary-color); border-color: var(--primary-color);">
+                            <i class="fas fa-check me-2"></i>Create Apartment
+                        </button>
+                        <button type="button" class="btn btn-light text-muted"
+                                data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -257,32 +372,42 @@
     </div>
 </div>
 
-<!-- Pay Modal -->
 <div class="modal fade" id="payModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Record Payment</h5>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0" style="background-color: #f0fdf4;">
+                <h5 class="modal-title fw-bold text-success">
+                    <i class="fas fa-cash-register me-2"></i>Record Payment
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body pt-4">
                 <form action="/payments/create" method="post">
-                    <div class="mb-3">
-                        <label for="payApartmentId" class="form-label">Apartment ID</label>
-                        <input type="number" class="form-control" id="payApartmentId" name="apartmentId" readonly
-                               required>
-                        <div class="form-text">Apartment ID is pre-filled.</div>
+                    <div class="mb-4">
+                        <label for="payApartmentId"
+                               class="form-label small text-muted fw-bold text-uppercase">Apartment ID</label>
+                        <input type="number" class="form-control fw-bold text-dark" id="payApartmentId"
+                               name="apartmentId" readonly required style="background-color: #f8f9fa;">
                     </div>
 
-                    <div class="mb-3">
-                        <label for="payAmount" class="form-label">Amount</label>
-                        <input type="number" step="0.01" class="form-control" id="payAmount" name="amount" required>
-                        <div class="form-text">Amount is pre-filled.</div>
+                    <div class="mb-4">
+                        <label for="payAmount" class="form-label small text-muted fw-bold text-uppercase">Amount
+                            (BGN)</label>
+                        <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-white border-end-0 text-success"><i
+                                        class="fas fa-money-bill-wave"></i></span>
+                            <input type="number" step="0.01"
+                                   class="form-control border-start-0 ps-0 text-success fw-bold" id="payAmount"
+                                   name="amount" required>
+                        </div>
                     </div>
 
-                    <div class="modal-footer px-0 pb-0">
-                        <button type="submit" class="btn btn-success">Pay</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success py-2 fw-bold shadow-sm">
+                            <i class="fas fa-check-circle me-2"></i>Confirm Payment
+                        </button>
+                        <button type="button" class="btn btn-light text-muted"
+                                data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </form>
             </div>

@@ -103,7 +103,7 @@
             </td>
 
             <td class="text-end pe-4">
-                <button type="button" class="btn btn-light btn-sm text-secondary border hover-shadow"
+                <button type="button" class="btn btn-light btn-md text-secondary border hover-shadow"
                         data-bs-toggle="modal"
                         data-bs-target="#editEmployeeModal"
                         th:data-id="${employee.id}"
@@ -116,7 +116,7 @@
                 </button>
 
                 <form th:action="@{/employees/delete/{id}(id=${employee.id})}" th:method="delete" style="display:inline;">
-                    <button type="submit" class="btn btn-light btn-sm text-danger border hover-shadow ms-1"
+                    <button type="submit" class="btn btn-light btn-md text-danger border hover-shadow ms-1"
                             onclick="return confirm('Are you sure? We will attempt redistribution.')"
                             title="Delete">
                         <i class="fas fa-trash"></i>
@@ -140,8 +140,10 @@
     <div class="modal fade" id="createEmployeeModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold">Add New Employee</h5>
+                <div class="modal-header border-bottom-0 pb-0" style="background-color: var(--bg-body);">
+                    <h5 class="modal-title fw-bold" style="color: var(--primary-color);">
+                        <i class="fas fa-user-tie me-2"></i>Add New Employee
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -192,50 +194,70 @@
 </div>
 
 <!-- Edit Employee Modal -->
-<div class="modal fade" id="editEmployeeModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold">Edit Employee</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form th:action="@{/employees/update}" method="post" id="editEmployeeForm">
-                    <input type="hidden" name="id" id="editId">
+    <div class="modal fade" id="editEmployeeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom-0 pb-0" style="background-color: var(--bg-body);">
+                    <h5 class="modal-title fw-bold" style="color: var(--primary-color);">
+                        <i class="fas fa-user-edit me-2"></i>Edit Employee
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-4">
+                    <form th:action="@{/employees/update}" method="post" id="editEmployeeForm">
+                        <input type="hidden" name="id" id="editId">
 
-                    <div class="mb-3">
-                        <label class="form-label text-muted small fw-bold">First Name</label>
-                        <label for="editFirstName"></label><input type="text" class="form-control" name="firstName" id="editFirstName" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-muted small fw-bold">LAST NAME</label>
-                        <label for="editLastName"></label><input type="text" class="form-control" name="lastName" id="editLastName" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-muted small fw-bold">PHONE NUMBER</label>
-                        <input type="text" class="form-control" name="phoneNumber" id="editPhoneNumber" required
-                               pattern="\d{10}" title="Ten digits">
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label text-muted small fw-bold">COMPANY</label>
-                        <select class="form-select" name="companyId" id="editCompanyId">
-                            <option value="">-- Freelancer --</option>
-                            <option th:each="company : ${companies}"
-                                    th:value="${company.id}"
-                                    th:text="${company.name}">Company</option>
-                        </select>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary"
-                                style="background-color: var(--primary-color); border-color: var(--primary-color);">
-                            Save Changes
-                        </button>
-                    </div>
-                </form>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold text-uppercase">First Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-user"></i></span>
+                                <input type="text" class="form-control border-start-0 ps-0" name="firstName" id="editFirstName" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Last Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-user"></i></span>
+                                <input type="text" class="form-control border-start-0 ps-0" name="lastName" id="editLastName" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-phone"></i></span>
+                                <input type="text" class="form-control border-start-0 ps-0" name="phoneNumber" id="editPhoneNumber" required
+                                       pattern="\d{10}" title="Ten digits">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Company</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-building"></i></span>
+                                <select class="form-select border-start-0 ps-0" name="companyId" id="editCompanyId">
+                                    <option value="">-- Freelancer (No Company) --</option>
+                                    <option th:each="company : ${companies}"
+                                            th:value="${company.id}"
+                                            th:text="${company.name}">Company</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn text-white py-2 fw-bold shadow-sm"
+                                    style="background-color: var(--primary-color); border-color: var(--primary-color);">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                            <button type="button" class="btn btn-light text-muted" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

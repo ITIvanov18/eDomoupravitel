@@ -24,10 +24,13 @@ public class PaymentController {
 
     @GetMapping
     public String listPayments(Model model) {
-        // стандартен списък с плащания
+        // списък с плащания (история)
         model.addAttribute("payments", paymentService.getAllPayments());
 
-        // данните за хазната
+        // списък с всички апартаменти за падащото меню "Record Payment"
+        model.addAttribute("apartments", apartmentService.getAllApartments());
+
+        // данни за хазната
         model.addAttribute("report", treasuryService.getTreasuryReport());
         model.addAttribute("currentMonth", LocalDate.now().getMonthValue());
         model.addAttribute("currentYear", LocalDate.now().getYear());

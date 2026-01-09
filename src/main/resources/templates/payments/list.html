@@ -22,9 +22,9 @@
                 <i class="fas fa-chart-line me-1"></i> Treasury Report
             </button>
 
-            <button type="button" class="btn btn-success me-2" data-bs-toggle="modal"
+            <button type="button" class="btn btn-success text-white shadow-sm   " data-bs-toggle="modal"
                     data-bs-target="#createPaymentModal">
-                <i class="fas fa-plus"></i> Record Payment
+                <i class="fas fa-plus-circle me-2"></i>Record Payment
             </button>
             <a href="/payments/export" class="btn btn-outline-dark">
                 <i class="fas fa-file-csv"></i> Export CSV
@@ -68,14 +68,10 @@
                               class="p-2 border rounded bg-light">
                             <label class="small fw-bold text-muted mb-1">Generate Monthly Fees:</label>
                             <div class="input-group input-group-sm">
-                                <label>
-                                    <input type="number" name="month" class="form-control" th:value="${currentMonth}"
-                                           min="1" max="12" placeholder="MM">
-                                </label>
-                                <label>
-                                    <input type="number" name="year" class="form-control" th:value="${currentYear}"
-                                           placeholder="YYYY">
-                                </label>
+                                <input type="number" name="month" class="form-control" th:value="${currentMonth}"
+                                       min="1" max="12" placeholder="MM">
+                                <input type="number" name="year" class="form-control" th:value="${currentYear}"
+                                       placeholder="YYYY">
                                 <button type="submit" class="btn btn-primary"
                                         onclick="return confirm('Generate fees for all apartments?')">
                                     <i class="fas fa-cogs"></i> Run
@@ -201,25 +197,52 @@
 </div>
 
 <div class="modal fade" id="createPaymentModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Record Payment</h5>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0" style="background-color: #f0fdf4;">
+                <h5 class="modal-title fw-bold text-success">
+                    <i class="fas fa-cash-register me-2"></i>Record New Payment
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <form action="/payments/create" method="post">
-                    <div class="mb-3">
-                        <label for="apartmentId" class="form-label">Apartment ID</label>
-                        <input type="number" class="form-control" id="apartmentId" name="apartmentId" required>
+
+            <div class="modal-body pt-4">
+                <form th:action="@{/payments/create}" method="post">
+
+                    <div class="mb-4">
+                        <label for="apartmentId"
+                               class="form-label small text-muted fw-bold text-uppercase">Apartment</label>
+                        <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-success"><i
+                                        class="fas fa-home"></i></span>
+                            <select class="form-select border-start-0 ps-0 fw-bold text-dark" id="apartmentId"
+                                    name="apartmentId" required>
+                                <option value="" selected disabled>Select Apartment...</option>
+                                <option th:each="apt : ${apartments}" th:value="${apt.id}"
+                                        th:text="|Apt. ${apt.apartmentNumber} (Floor ${apt.floor})|">
+                                </option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="amount" class="form-label">Amount</label>
-                        <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
+
+                    <div class="mb-4">
+                        <label for="amount" class="form-label small text-muted fw-bold text-uppercase">Amount
+                            (BGN)</label>
+                        <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-white border-end-0 text-success"><i
+                                        class="fas fa-money-bill-wave"></i></span>
+                            <input type="number" step="0.01"
+                                   class="form-control border-start-0 ps-0 text-success fw-bold" id="amount"
+                                   name="amount" placeholder="0.00" required>
+                        </div>
                     </div>
-                    <div class="modal-footer px-0 pb-0">
-                        <button type="submit" class="btn btn-success">Pay</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success py-2 fw-bold shadow-sm">
+                            <i class="fas fa-check-circle me-2"></i>Confirm Payment
+                        </button>
+                        <button type="button" class="btn btn-light text-muted"
+                                data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </form>
             </div>
