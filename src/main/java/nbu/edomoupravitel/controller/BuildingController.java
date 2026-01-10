@@ -50,7 +50,7 @@ public class BuildingController {
         return "redirect:/buildings";
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public String deleteBuilding(@PathVariable Long id) {
         buildingService.deleteBuilding(id);
         return "redirect:/buildings";
