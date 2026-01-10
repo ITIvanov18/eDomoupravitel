@@ -6,8 +6,8 @@ import nbu.edomoupravitel.dto.TreasuryReportDto;
 import nbu.edomoupravitel.entity.Apartment;
 import nbu.edomoupravitel.entity.MonthlyFee;
 import nbu.edomoupravitel.repository.ApartmentRepository;
-import nbu.edomoupravitel.repository.CompanyRepository;
 import nbu.edomoupravitel.repository.MonthlyFeeRepository;
+import nbu.edomoupravitel.repository.PaymentRepository;
 import nbu.edomoupravitel.service.ApartmentService;
 import nbu.edomoupravitel.service.CompanyService;
 import nbu.edomoupravitel.service.TreasuryService;
@@ -27,18 +27,24 @@ public class TreasuryServiceImpl implements TreasuryService {
     private final ApartmentRepository apartmentRepository;
     private final ApartmentService apartmentService;
     private final CompanyService companyService;
-    private final CompanyRepository companyRepository;
+    private final PaymentRepository paymentRepository;
 
     @Override
     @Transactional
     public void generateMonthlyFees(int month, int year) {
-        if (monthlyFeeRepository.existsByMonthAndYear(month, year)) {
-            throw new RuntimeException("Fees for " + month + "/" + year + " are already generated!");
-        }
 
         List<Apartment> apartments = apartmentRepository.findAll();
+
         for (Apartment apartment : apartments) {
+            // проверка дали ТОЗИ апартамент вече има такса
+            if (monthlyFeeRepository.existsByApartmentAndMonthAndYear(apartment, month, year)) {
+                continue; // ако има -> прескача го и продължава към следващия
+            }
+
+            // ако няма -> смята я и я записва
             double feeAmount = apartmentService.calculateMonthlyFee(apartment.getId());
+
+            // генерира такса само ако сумата е положителна
             if (feeAmount > 0) {
                 MonthlyFee fee = MonthlyFee.builder()
                         .apartment(apartment)
@@ -63,17 +69,18 @@ public class TreasuryServiceImpl implements TreasuryService {
         List<CompanyDto> companies = companyService.getAllCompanies();
 
         for (CompanyDto company : companies) {
-            // общо задължения през repository query
-            BigDecimal unpaid = monthlyFeeRepository.sumUnpaidByCompany(company.getId());
-            if (unpaid == null)
-                unpaid = BigDecimal.ZERO;
+            // взима колко пари е ПОИСКАЛА фирмата (всички такси)
+            BigDecimal totalFees = monthlyFeeRepository.sumTotalFeesByCompany(company.getId());
+            if (totalFees == null) totalFees = BigDecimal.ZERO;
 
-            BigDecimal paid = monthlyFeeRepository.findAll().stream()
-                    .filter(mf -> mf.getApartment().getBuilding().getEmployee().getCompany().getId()
-                            .equals(company.getId()))
-                    .filter(MonthlyFee::isPaid)
-                    .map(MonthlyFee::getAmount)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            // взима колко пари е ПОЛУЧИЛА фирмата (всички плащания)
+            BigDecimal totalPayments = paymentRepository.sumTotalPaymentsByCompany(company.getId());
+            if (totalPayments == null) totalPayments = BigDecimal.ZERO;
+
+            // дължимата сума е разликата им
+            BigDecimal unpaid = totalFees.subtract(totalPayments);
+
+            BigDecimal paid = totalPayments;
 
             globalUnpaid = globalUnpaid.add(unpaid);
             globalPaid = globalPaid.add(paid);
@@ -97,11 +104,9 @@ public class TreasuryServiceImpl implements TreasuryService {
             if (isLate) {
                 String aptInfo = "Ap. " + fee.getApartment().getApartmentNumber() +
                         " (Floor " + fee.getApartment().getFloor() + ")";
-                // добавя се и адреса на сградата за яснота
                 if (fee.getApartment().getBuilding() != null) {
                     aptInfo = fee.getApartment().getBuilding().getAddress() + ", " + aptInfo;
                 }
-
                 overdueList.add(new TreasuryReportDto.OverdueInfo(
                         aptInfo,
                         fee.getMonth() + "/" + fee.getYear(),

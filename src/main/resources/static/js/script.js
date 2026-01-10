@@ -98,41 +98,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 .catch(error => console.error('Error:', error));
         });
     }
+    // при клик на "Manage" се взима ID-то на фирмата
+    manageButtons.forEach(btn => {
+        btn.addEventListener('click', function () {
+            currentCompanyId = this.getAttribute('data-company-id');
 
-    if (createForm) {
-        createForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            if (!currentCompanyId) return;
+            const hiddenInput = document.getElementById('hiddenCompanyId');
+            if (hiddenInput) {
+                hiddenInput.value = currentCompanyId;
+            }
 
-            const formData = new FormData(createForm);
-            const data = {
-                firstName: formData.get('firstName'),
-                lastName: formData.get('lastName'),
-                phoneNumber: formData.get('phoneNumber')
-            };
-
-            fetch(`/companies/${currentCompanyId}/employees/create`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-                .then(response => {
-                    if (response.ok) {
-                        createForm.reset();
-                        loadCompanyData(currentCompanyId); // Reload data
-                        // Switch to list tab
-                        const triggerEl = document.querySelector('#manageTabs button[data-bs-target="#list-pane"]');
-                        const tabInstance = new bootstrap.Tab(triggerEl);
-                        tabInstance.show();
-                    } else {
-                        alert('Failed to create employee.');
-                    }
-                })
-                .catch(error => console.error('Error:', error));
+            loadCompanyData(currentCompanyId);
+            modal.show();
         });
-    }
+    });
+
 
     // централна функция за зареждане.
     // извиква се при отваряне на модала И при всяко действие (Assign/Create/Fire),

@@ -1,5 +1,6 @@
 package nbu.edomoupravitel.repository;
 
+import nbu.edomoupravitel.entity.Apartment;
 import nbu.edomoupravitel.entity.MonthlyFee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,8 +18,13 @@ public interface MonthlyFeeRepository extends JpaRepository<MonthlyFee, Long> {
             "AND mf.apartment.building.employee.company.id = :companyId")
         BigDecimal sumPaidByCompany(Long companyId);
 
+        // сумира всички начислени такси (платени и неплатени)
+        @Query("SELECT SUM(mf.amount) FROM MonthlyFee mf WHERE mf.apartment.building.employee.company.id = :companyId")
+        BigDecimal sumTotalFeesByCompany(Long companyId);
+
         // проверка дали вече са начислени такси за този месец
         boolean existsByMonthAndYear(int month, int year);
+        boolean existsByApartmentAndMonthAndYear(Apartment apartment, int month, int year);
 
         // СПРАВКИ ЗА ДЪЛЖИМИ СУМИ
         // дължимо по компания
